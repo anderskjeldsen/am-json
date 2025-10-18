@@ -1,0 +1,35 @@
+namespace Am.Util.Parsers.Json {
+
+    class JsonObject {
+        import Am.Lang
+        private var properties: Dictionary<String, Any> = new Dictionary<String, Any>()
+
+        public fun put(key: String, value: Any): Void {
+            this.properties.put(key, value)
+        }
+
+        public fun get(key: String): Any {
+            return this.properties.get(key)
+        }
+
+        public fun has(key: String): Boolean {
+            return this.properties.containsKey(key)
+        }
+
+        public fun remove(key: String): Any {
+            return this.properties.remove(key)
+        }
+
+        public fun keys(): Array<String> {
+            return this.properties.keys()
+        }
+
+        public fun size(): Int {
+            return this.properties.size()
+        }
+
+        public fun isEmpty(): Boolean {
+            return this.properties.isEmpty()
+        }
+    }
+}

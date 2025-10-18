@@ -1,0 +1,39 @@
+namespace Am.Util.Parsers.Json {
+
+    class JsonArray {
+        import Am.Lang
+        private var elements: Array<Any> = new Array<Any>()
+
+        public fun add(value: Any): Void {
+            this.elements.add(value)
+        }
+
+        public fun get(index: Int): Any {
+            return this.elements.get(index)
+        }
+
+        public fun set(index: Int, value: Any): Void {
+            this.elements.set(index, value)
+        }
+
+        public fun remove(index: Int): Any {
+            return this.elements.remove(index)
+        }
+
+        public fun size(): Int {
+            return this.elements.size()
+        }
+
+        public fun isEmpty(): Boolean {
+            return this.elements.isEmpty()
+        }
+
+        public fun indexOf(value: Any): Int {
+            return this.elements.indexOf(value)
+        }
+
+        public fun contains(value: Any): Boolean {
+            return this.elements.contains(value)
+        }
+    }
+}

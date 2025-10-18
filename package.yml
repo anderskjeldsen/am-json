@@ -1,0 +1,11 @@
+id: "am-json"
+version: "1.0.0"
+type: "application"
+
+platforms:
+  - id: "linux"
+    gccCommand: "gcc"
+
+buildTargets:
+  - id: "default"
+    platform: "linux"

@@ -1,0 +1,48 @@
+namespace Tests {
+
+    class JsonParserTest {
+        import Am.Lang
+        import Am.Util.Parsers.Json
+        import Am.Util.Parsers.Text
+
+        test parseJsonObject() {
+            var jsonStr: String = "{\"name\":\"John\",\"age\":30,\"active\":true}"
+            var textParser: TextParser = TextParser(jsonStr)
+            var jsonParser: JsonParser = JsonParser(textParser)
+            var result: Any = jsonParser.parse(ClassRef(JsonObject))
+            assert(result is JsonObject)
+            var jsonObj: JsonObject = result as JsonObject
+            assert(jsonObj.get("name") as String == "John")
+            assert(jsonObj.get("age") as Int == 30)
+            assert(jsonObj.get("active") as Boolean == true)
+        }
+
+        test parseJsonArray() {
+            var jsonStr: String = "[1,2,3,\"hello\",true]"
+            var textParser: TextParser = TextParser(jsonStr)
+            var jsonParser: JsonParser = JsonParser(textParser)
+            var result: Any = jsonParser.parse(ClassRef(JsonArray))
+            assert(result is JsonArray)
+            var jsonArr: JsonArray = result as JsonArray
+            assert(jsonArr.get(0) as Int == 1)
+            assert(jsonArr.get(1) as Int == 2)
+            assert(jsonArr.get(2) as Int == 3)
+            assert(jsonArr.get(3) as String == "hello")
+            assert(jsonArr.get(4) as Boolean == true)
+        }
+
+        test parseNestedJson() {
+            var jsonStr: String = "{\"users\":[{\"name\":\"Alice\",\"id\":1},{\"name\":\"Bob\",\"id\":2}],\"count\":2}"
+            var textParser: TextParser = TextParser(jsonStr)
+            var jsonParser: JsonParser = JsonParser(textParser)
+            var result: Any = jsonParser.parse(ClassRef(JsonObject))
+            assert(result is JsonObject)
+            var jsonObj: JsonObject = result as JsonObject
+            var users: JsonArray = jsonObj.get("users") as JsonArray
+            assert(users.size() == 2)
+            var firstUser: JsonObject = users.get(0) as JsonObject
+            assert(firstUser.get("name") as String == "Alice")
+            assert(firstUser.get("id") as Int == 1)
+        }
+    }
+}
