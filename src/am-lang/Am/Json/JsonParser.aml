@@ -1,4 +1,4 @@
-namespace Am.Util.Parsers.Json {
+namespace Am.Json {
 
     class JsonParser(private var parser: TextParser) {
         import Am.Lang
@@ -29,6 +29,7 @@ namespace Am.Util.Parsers.Json {
                 return this.parseJsonArray(classRef)
             } else {
                 // Parse single values (string, number, boolean, null)
+                // Return the JsonValue wrapper for type information
                 return this.parseValue()
             }
         }
@@ -97,7 +98,7 @@ namespace Am.Util.Parsers.Json {
             
             while (true) {
                 var value = this.parseValue()
-                jsonArray.add(value)
+                jsonArray.addValue(value)
                 this.skipWhitespace()
                 
                 c = this.parser.peekChar()
@@ -114,21 +115,21 @@ namespace Am.Util.Parsers.Json {
             return jsonArray
         }
 
-        private fun parseValue(): Any {
+        private fun parseValue(): JsonValue {
             this.skipWhitespace()
             var c = this.parser.peekChar()
             
             if (c == 34US) { // '"'
-                return this.parseString()
+                return JsonValue.fromString(this.parseString())
             } else if (c == 123US) { // '{'
-                return this.parseJsonObject(null)
+                return JsonValue.fromObject(this.parseJsonObject(null))
             } else if (c == 91US) { // '['
-                return this.parseJsonArray(null)
+                return JsonValue.fromArray(this.parseJsonArray(null))
             } else if (c == 116US) { // 't' for "true"
                 var str = this.parser.peek(4UI)
                 if (str == "true") {
                     this.parser.skip(4UI)
-                    return true
+                    return JsonValue.fromBoolean(true)
                 } else {
                     throw new Exception("Invalid literal starting with 't'")
                 }
@@ -136,7 +137,7 @@ namespace Am.Util.Parsers.Json {
                 var str = this.parser.peek(5UI)
                 if (str == "false") {
                     this.parser.skip(5UI)
-                    return false
+                    return JsonValue.fromBoolean(false)
                 } else {
                     throw new Exception("Invalid literal starting with 'f'")
                 }
@@ -144,7 +145,7 @@ namespace Am.Util.Parsers.Json {
                 var str = this.parser.peek(4UI)
                 if (str == "null") {
                     this.parser.skip(4UI)
-                    return null
+                    return JsonValue.fromNull()
                 } else {
                     throw new Exception("Invalid literal starting with 'n'")
                 }
@@ -152,9 +153,9 @@ namespace Am.Util.Parsers.Json {
                 // number (digits, minus, or plus)
                 var str = this.parser.parseUntil((ch) => return ch == 32US || ch == 9US || ch == 10US || ch == 13US || ch == 44US || ch == 93US || ch == 125US)
                 if (str.indexOf(".") != -1) {
-                    return Double.parseDouble(str)
+                    return JsonValue.fromDouble(Double.parseDouble(str))
                 } else {
-                    return Integer.parseInt(str)
+                    return JsonValue.fromInteger(Integer.parseInt(str))
                 }
             }
         }
@@ -184,7 +185,7 @@ namespace Am.Util.Parsers.Json {
                 this.skipWhitespace()
                 
                 var value = this.parseValue()
-                jsonObject.put(key, value)
+                jsonObject.putValue(key, value)
                 this.skipWhitespace()
                 
                 c = this.parser.peekChar()

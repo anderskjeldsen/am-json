@@ -1,0 +1,123 @@
+namespace Am.Json {
+
+    enum JsonValueType {
+        string = 1
+        integer = 2
+        double = 3
+        boolean = 4
+        null = 5
+        object = 6
+        array = 7
+    }
+
+    class JsonValue(private value: Any, private type: JsonValueType) {
+        import Am.Lang
+
+        public fun getValue(): Any {
+            return this.value
+        }
+
+        public fun getType(): JsonValueType {
+            return this.type
+        }
+
+        public fun isString(): Boolean {
+            return this.type == JsonValueType.string
+        }
+
+        public fun isInteger(): Boolean {
+            return this.type == JsonValueType.integer
+        }
+
+        public fun isDouble(): Boolean {
+            return this.type == JsonValueType.double
+        }
+
+        public fun isBoolean(): Boolean {
+            return this.type == JsonValueType.boolean
+        }
+
+        public fun isNull(): Boolean {
+            return this.type == JsonValueType.null
+        }
+
+        public fun isObject(): Boolean {
+            return this.type == JsonValueType.object
+        }
+
+        public fun isArray(): Boolean {
+            return this.type == JsonValueType.array
+        }
+
+        public fun asString(): String {
+            if (this.type == JsonValueType.string) {
+                return this.value as String
+            }
+            throw new Exception("JsonValue is not a string")
+        }
+
+        public fun asInteger(): Int {
+            if (this.type == JsonValueType.integer) {
+                return this.value as Int
+            }
+            throw new Exception("JsonValue is not an integer")
+        }
+
+        public fun asDouble(): Double {
+            if (this.type == JsonValueType.double) {
+                return this.value as Double
+            }
+            throw new Exception("JsonValue is not a double")
+        }
+
+        public fun asBoolean(): Boolean {
+            if (this.type == JsonValueType.boolean) {
+                return this.value as Boolean
+            }
+            throw new Exception("JsonValue is not a boolean")
+        }
+
+        public fun asObject(): JsonObject {
+            if (this.type == JsonValueType.object) {
+                return this.value as JsonObject
+            }
+            throw new Exception("JsonValue is not an object")
+        }
+
+        public fun asArray(): JsonArray {
+            if (this.type == JsonValueType.array) {
+                return this.value as JsonArray
+            }
+            throw new Exception("JsonValue is not an array")
+        }
+
+        // Static factory methods for creating JsonValues
+        public static fun fromString(value: String): JsonValue {
+            return new JsonValue(value, JsonValueType.string)
+        }
+
+        public static fun fromInteger(value: Int): JsonValue {
+            return new JsonValue(value, JsonValueType.integer)
+        }
+
+        public static fun fromDouble(value: Double): JsonValue {
+            return new JsonValue(value, JsonValueType.double)
+        }
+
+        public static fun fromBoolean(value: Boolean): JsonValue {
+            return new JsonValue(value, JsonValueType.boolean)
+        }
+
+        public static fun fromNull(): JsonValue {
+            return new JsonValue(null, JsonValueType.null)
+        }
+
+        public static fun fromObject(value: JsonObject): JsonValue {
+            return new JsonValue(value, JsonValueType.object)
+        }
+
+        public static fun fromArray(value: JsonArray): JsonValue {
+            return new JsonValue(value, JsonValueType.array)
+        }
+    }
+}

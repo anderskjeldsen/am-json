@@ -1,22 +1,150 @@
-namespace Am.Util.Parsers.Json {
+namespace Am.Json {
 
     class JsonObject {
         import Am.Lang
-        private var properties: Dictionary<String, Any> = new Dictionary<String, Any>()
+        import Am.Collections
 
-        public fun put(key: String, value: Any): Void {
+        private var properties: HashMap<String, JsonValue> = new HashMap<String, JsonValue>()
+
+        // Put methods for different types
+        public fun put(key: String, value: String): Void {
+            this.properties.put(key, JsonValue.fromString(value))
+        }
+
+        public fun put(key: String, value: Int): Void {
+            this.properties.put(key, JsonValue.fromInteger(value))
+        }
+
+        public fun put(key: String, value: Double): Void {
+            this.properties.put(key, JsonValue.fromDouble(value))
+        }
+
+        public fun put(key: String, value: Boolean): Void {
+            this.properties.put(key, JsonValue.fromBoolean(value))
+        }
+
+        public fun put(key: String, value: JsonObject): Void {
+            this.properties.put(key, JsonValue.fromObject(value))
+        }
+
+        public fun put(key: String, value: JsonArray): Void {
+            this.properties.put(key, JsonValue.fromArray(value))
+        }
+
+        public fun putNull(key: String): Void {
+            this.properties.put(key, JsonValue.fromNull())
+        }
+
+        // Generic put method for JsonValue
+        public fun putValue(key: String, value: JsonValue): Void {
             this.properties.put(key, value)
         }
 
-        public fun get(key: String): Any {
+        // Get the JsonValue wrapper (contains type information)
+        public fun getValue(key: String): JsonValue {
             return this.properties.get(key)
         }
 
+        // Direct type-safe getters
+        public fun getString(key: String): String {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asString()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getInt(key: String): Int {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asInteger()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getDouble(key: String): Double {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asDouble()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getBoolean(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asBoolean()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getJsonObject(key: String): JsonObject {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asObject()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getJsonArray(key: String): JsonArray {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asArray()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        // Type checking methods
+        public fun isString(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isString()
+        }
+
+        public fun isInteger(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isInteger()
+        }
+
+        public fun isDouble(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isDouble()
+        }
+
+        public fun isBoolean(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isBoolean()
+        }
+
+        public fun isNull(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isNull()
+        }
+
+        public fun isObject(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isObject()
+        }
+
+        public fun isArray(key: String): Boolean {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isArray()
+        }
+
+        // Get the type of a property
+        public fun getType(key: String): JsonValueType {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.getType()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        // Utility methods
         public fun has(key: String): Boolean {
             return this.properties.containsKey(key)
         }
 
-        public fun remove(key: String): Any {
+        public fun remove(key: String): JsonValue {
             return this.properties.remove(key)
         }
 

@@ -1,22 +1,129 @@
-namespace Am.Util.Parsers.Json {
+namespace Am.Json {
 
     class JsonArray {
         import Am.Lang
-        private var elements: Array<Any> = new Array<Any>()
+        import Am.Collections
+        private var elements: List<JsonValue> = List.newList<JsonValue>()
 
-        public fun add(value: Any): Void {
+        // Add methods for different types
+        public fun add(value: String): Void {
+            this.elements.add(JsonValue.fromString(value))
+        }
+
+        public fun add(value: Int): Void {
+            this.elements.add(JsonValue.fromInteger(value))
+        }
+
+        public fun add(value: Double): Void {
+            this.elements.add(JsonValue.fromDouble(value))
+        }
+
+        public fun add(value: Boolean): Void {
+            this.elements.add(JsonValue.fromBoolean(value))
+        }
+
+        public fun add(value: JsonObject): Void {
+            this.elements.add(JsonValue.fromObject(value))
+        }
+
+        public fun add(value: JsonArray): Void {
+            this.elements.add(JsonValue.fromArray(value))
+        }
+
+        public fun addNull(): Void {
+            this.elements.add(JsonValue.fromNull())
+        }
+
+        // Generic add method for JsonValue
+        public fun addValue(value: JsonValue): Void {
             this.elements.add(value)
         }
 
-        public fun get(index: Int): Any {
+        // Get the JsonValue wrapper (contains type information)
+        public fun getValue(index: Int): JsonValue {
             return this.elements.get(index)
         }
 
-        public fun set(index: Int, value: Any): Void {
+        // Direct type-safe getters
+        public fun getString(index: Int): String {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asString()
+        }
+
+        public fun getInt(index: Int): Int {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asInteger()
+        }
+
+        public fun getDouble(index: Int): Double {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asDouble()
+        }
+
+        public fun getBoolean(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asBoolean()
+        }
+
+        public fun getJsonObject(index: Int): JsonObject {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asObject()
+        }
+
+        public fun getJsonArray(index: Int): JsonArray {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asArray()
+        }
+
+        // Type checking methods
+        public fun isString(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isString()
+        }
+
+        public fun isInteger(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isInteger()
+        }
+
+        public fun isDouble(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isDouble()
+        }
+
+        public fun isBoolean(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isBoolean()
+        }
+
+        public fun isNull(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isNull()
+        }
+
+        public fun isObject(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isObject()
+        }
+
+        public fun isArray(index: Int): Boolean {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isArray()
+        }
+
+        // Get the type of an element
+        public fun getType(index: Int): JsonValueType {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.getType()
+        }
+
+        // Set methods
+        public fun set(index: Int, value: JsonValue): Void {
             this.elements.set(index, value)
         }
 
-        public fun remove(index: Int): Any {
+        // Utility methods
+        public fun remove(index: Int): JsonValue {
             return this.elements.remove(index)
         }
 
@@ -28,11 +135,11 @@ namespace Am.Util.Parsers.Json {
             return this.elements.isEmpty()
         }
 
-        public fun indexOf(value: Any): Int {
+        public fun indexOf(value: JsonValue): Int {
             return this.elements.indexOf(value)
         }
 
-        public fun contains(value: Any): Boolean {
+        public fun contains(value: JsonValue): Boolean {
             return this.elements.contains(value)
         }
     }
