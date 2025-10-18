@@ -10,21 +10,21 @@ namespace Tests {
             var person = new JsonObject()
             person.putString("name", "John Doe")
             person.putInt("age", 30)
-            person.putDouble("salary", 75000.50)
+            person.putLong("salary", 75000L)
             person.putBoolean("active", true)
             person.putNull("manager")
             
             // Test type checking
             assert(person.isString("name"))
             assert(person.isInteger("age"))
-            assert(person.isDouble("salary"))
+            assert(person.isLong("salary"))
             assert(person.isBoolean("active"))
             assert(person.isNull("manager"))
             
             // Test type-safe getters
             assert(person.getString("name") == "John Doe")
             assert(person.getInt("age") == 30)
-            assert(person.getDouble("salary") == 75000.50)
+            assert(person.getLong("salary") == 75000L)
             assert(person.getBoolean("active") == true)
             
             // Test getting JsonValue with type information
@@ -36,21 +36,21 @@ namespace Tests {
         test testJsonArrayWithTypes() {
             var numbers = new JsonArray()
             numbers.addInt(1)
-            numbers.addDouble(2.5)
+            numbers.addLong(2L)
             numbers.addString("three")
             numbers.addBoolean(true)
             numbers.addNull()
             
             // Test type checking
             assert(numbers.isInteger(0))
-            assert(numbers.isDouble(1))
+            assert(numbers.isLong(1))
             assert(numbers.isString(2))
             assert(numbers.isBoolean(3))
             assert(numbers.isNull(4))
             
             // Test type-safe getters
             assert(numbers.getInt(0) == 1)
-            assert(numbers.getDouble(1) == 2.5)
+            assert(numbers.getLong(1) == 2L)
             assert(numbers.getString(2) == "three")
             assert(numbers.getBoolean(3) == true)
             

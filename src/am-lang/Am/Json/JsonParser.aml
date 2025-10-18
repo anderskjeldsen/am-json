@@ -28,7 +28,7 @@ namespace Am.Json {
             } else if (c == JsonParser.leftBracket) { // '['
                 return this.parseJsonArray(classRef)
             } else {
-                // Parse single values (string, number, boolean, null)
+                // Parse single values (string, number, boolValue, null)
                 // Return the JsonValue wrapper for type information
                 return this.parseValue()
             }
@@ -129,7 +129,7 @@ namespace Am.Json {
                 var str = this.parser.peek(4UI)
                 if (str == "true") {
                     this.parser.skip(4UI)
-                    return JsonValue.fromBoolean(true)
+                    return JsonValue.fromBool(true)
                 } else {
                     throw new Exception("Invalid literal starting with 't'")
                 }
@@ -137,7 +137,7 @@ namespace Am.Json {
                 var str = this.parser.peek(5UI)
                 if (str == "false") {
                     this.parser.skip(5UI)
-                    return JsonValue.fromBoolean(false)
+                    return JsonValue.fromBool(false)
                 } else {
                     throw new Exception("Invalid literal starting with 'f'")
                 }
@@ -150,13 +150,14 @@ namespace Am.Json {
                     throw new Exception("Invalid literal starting with 'n'")
                 }
             } else {
-                // number (digits, minus, or plus)
+                // number (digits, minus, or plus) - parse all as Long (ignore decimal points)
                 var str = this.parser.parseUntil((ch) => return ch == 32US || ch == 9US || ch == 10US || ch == 13US || ch == 44US || ch == 93US || ch == 125US)
-                if (str.indexOf(".") != -1) {
-                    return JsonValue.fromDouble(Double.parseDouble(str))
-                } else {
-                    return JsonValue.fromInteger(Integer.parseInt(str))
+                // Remove decimal point and everything after it if present
+                var dotIndex = str.indexOf(".")
+                if (dotIndex != -1) {
+                    str = str.substring(0, dotIndex)
                 }
+                return JsonValue.fromLong(Long.parseLong(str))
             }
         }
 

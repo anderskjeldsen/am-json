@@ -15,12 +15,12 @@ namespace Am.Json {
             this.properties.put(key, JsonValue.fromInteger(value))
         }
 
-        public fun putDouble(key: String, value: Double): Void {
-            this.properties.put(key, JsonValue.fromDouble(value))
+        public fun putLong(key: String, value: Long): Void {
+            this.properties.put(key, JsonValue.fromLong(value))
         }
 
-        public fun putBoolean(key: String, value: Boolean): Void {
-            this.properties.put(key, JsonValue.fromBoolean(value))
+        public fun putBool(key: String, value: Bool): Void {
+            this.properties.put(key, JsonValue.fromBool(value))
         }
 
         public fun putObject(key: String, value: JsonObject): Void {
@@ -62,18 +62,18 @@ namespace Am.Json {
             throw new Exception("Key '" + key + "' not found")
         }
 
-        public fun getDouble(key: String): Double {
+        public fun getLong(key: String): Long {
             var jsonValue = this.properties.get(key)
             if (jsonValue != null) {
-                return jsonValue.asDouble()
+                return jsonValue.asLong()
             }
             throw new Exception("Key '" + key + "' not found")
         }
 
-        public fun getBoolean(key: String): Boolean {
+        public fun getBool(key: String): Bool {
             var jsonValue = this.properties.get(key)
             if (jsonValue != null) {
-                return jsonValue.asBoolean()
+                return jsonValue.asBool()
             }
             throw new Exception("Key '" + key + "' not found")
         }
@@ -95,37 +95,37 @@ namespace Am.Json {
         }
 
         // Type checking methods
-        public fun isString(key: String): Boolean {
+        public fun isString(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isString()
         }
 
-        public fun isInteger(key: String): Boolean {
+        public fun isInteger(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isInteger()
         }
 
-        public fun isDouble(key: String): Boolean {
+        public fun isDouble(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isDouble()
         }
 
-        public fun isBoolean(key: String): Boolean {
+        public fun isBool(key: String): Bool {
             var jsonValue = this.properties.get(key)
-            return jsonValue != null && jsonValue.isBoolean()
+            return jsonValue != null && jsonValue.isBool()
         }
 
-        public fun isNull(key: String): Boolean {
+        public fun isNull(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isNull()
         }
 
-        public fun isObject(key: String): Boolean {
+        public fun isObject(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isObject()
         }
 
-        public fun isArray(key: String): Boolean {
+        public fun isArray(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isArray()
         }
@@ -140,7 +140,7 @@ namespace Am.Json {
         }
 
         // Utility methods
-        public fun has(key: String): Boolean {
+        public fun has(key: String): Bool {
             return this.properties.containsKey(key)
         }
 
@@ -156,7 +156,7 @@ namespace Am.Json {
             return this.properties.size()
         }
 
-        public fun isEmpty(): Boolean {
+        public fun isEmpty(): Bool {
             return this.properties.isEmpty()
         }
     }

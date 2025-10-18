@@ -1,13 +1,13 @@
 namespace Am.Json {
 
     enum JsonValueType {
-        string = 1
-        integer = 2
-        double = 3
-        boolean = 4
-        null = 5
-        object = 6
-        array = 7
+        stringType = 1
+        integerType = 2
+        longType = 3
+        boolValueType = 4
+        nullType = 5
+        objectType = 6
+        arrayType = 7
     }
 
     class JsonValue(private value: Any, private type: JsonValueType) {
@@ -21,71 +21,71 @@ namespace Am.Json {
             return this.type
         }
 
-        public fun isString(): Boolean {
-            return this.type == JsonValueType.string
+        public fun isString(): Bool {
+            return this.type == JsonValueType.stringType
         }
 
-        public fun isInteger(): Boolean {
-            return this.type == JsonValueType.integer
+        public fun isInteger(): Bool {
+            return this.type == JsonValueType.integerType
         }
 
-        public fun isDouble(): Boolean {
-            return this.type == JsonValueType.double
+        public fun isLong(): Bool {
+            return this.type == JsonValueType.longType
         }
 
-        public fun isBoolean(): Boolean {
-            return this.type == JsonValueType.boolean
+        public fun isBool(): Bool {
+            return this.type == JsonValueType.boolValue
         }
 
-        public fun isNull(): Boolean {
-            return this.type == JsonValueType.null
+        public fun isNull(): Bool {
+            return this.type == JsonValueType.nullType
         }
 
-        public fun isObject(): Boolean {
-            return this.type == JsonValueType.object
+        public fun isObject(): Bool {
+            return this.type == JsonValueType.objectType
         }
 
-        public fun isArray(): Boolean {
-            return this.type == JsonValueType.array
+        public fun isArray(): Bool {
+            return this.type == JsonValueType.arrayType
         }
 
         public fun asString(): String {
-            if (this.type == JsonValueType.string) {
+            if (this.type == JsonValueType.stringType) {
                 return this.value as String
             }
             throw new Exception("JsonValue is not a string")
         }
 
         public fun asInteger(): Int {
-            if (this.type == JsonValueType.integer) {
+            if (this.type == JsonValueType.integerType) {
                 return this.value as Int
             }
             throw new Exception("JsonValue is not an integer")
         }
 
-        public fun asDouble(): Double {
-            if (this.type == JsonValueType.double) {
-                return this.value as Double
+        public fun asLong(): Long {
+            if (this.type == JsonValueType.longType) {
+                return this.value as Long
             }
-            throw new Exception("JsonValue is not a double")
+            throw new Exception("JsonValue is not a long")
         }
 
-        public fun asBoolean(): Boolean {
-            if (this.type == JsonValueType.boolean) {
-                return this.value as Boolean
+        public fun asBool(): Bool {
+            if (this.type == JsonValueType.boolValueType) {
+                return this.value as Bool
             }
-            throw new Exception("JsonValue is not a boolean")
+            throw new Exception("JsonValue is not a boolValue")
         }
 
         public fun asObject(): JsonObject {
-            if (this.type == JsonValueType.object) {
+            if (this.type == JsonValueType.objectType) {
                 return this.value as JsonObject
             }
             throw new Exception("JsonValue is not an object")
         }
 
         public fun asArray(): JsonArray {
-            if (this.type == JsonValueType.array) {
+            if (this.type == JsonValueType.arrayType) {
                 return this.value as JsonArray
             }
             throw new Exception("JsonValue is not an array")
@@ -93,31 +93,31 @@ namespace Am.Json {
 
         // Static factory methods for creating JsonValues
         public static fun fromString(value: String): JsonValue {
-            return new JsonValue(value, JsonValueType.string)
+            return new JsonValue(value, JsonValueType.stringType)
         }
 
         public static fun fromInteger(value: Int): JsonValue {
-            return new JsonValue(value, JsonValueType.integer)
+            return new JsonValue(value, JsonValueType.integerType)
         }
 
-        public static fun fromDouble(value: Double): JsonValue {
-            return new JsonValue(value, JsonValueType.double)
+        public static fun fromLong(value: Long): JsonValue {
+            return new JsonValue(value, JsonValueType.longType)
         }
 
-        public static fun fromBoolean(value: Boolean): JsonValue {
-            return new JsonValue(value, JsonValueType.boolean)
+        public static fun fromBool(value: Bool): JsonValue {
+            return new JsonValue(value, JsonValueType.boolValueType)
         }
 
         public static fun fromNull(): JsonValue {
-            return new JsonValue(null, JsonValueType.null)
+            return new JsonValue(null, JsonValueType.nullType)
         }
 
         public static fun fromObject(value: JsonObject): JsonValue {
-            return new JsonValue(value, JsonValueType.object)
+            return new JsonValue(value, JsonValueType.objectType)
         }
 
         public static fun fromArray(value: JsonArray): JsonValue {
-            return new JsonValue(value, JsonValueType.array)
+            return new JsonValue(value, JsonValueType.arrayType)
         }
     }
 }

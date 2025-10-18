@@ -14,14 +14,18 @@ namespace Am.Json {
             this.elements.add(JsonValue.fromInteger(value))
         }
 
+        public fun addLong(value: Long): Void {
+            this.elements.add(JsonValue.fromLong(value))
+        }
+
         /*
         public fun addDouble(value: Double): Void {
             this.elements.add(JsonValue.fromDouble(value))
         }
             */
 
-        public fun addBoolean(value: Boolean): Void {
-            this.elements.add(JsonValue.fromBoolean(value))
+        public fun addBool(value: Bool): Void {
+            this.elements.add(JsonValue.fromBool(value))
         }
 
         public fun addObject(value: JsonObject): Void {
@@ -57,14 +61,14 @@ namespace Am.Json {
             return jsonValue.asInteger()
         }
 
-        public fun getDouble(index: Int): Double {
+        public fun getLong(index: Int): Long {
             var jsonValue = this.elements.get(index)
-            return jsonValue.asDouble()
+            return jsonValue.asLong()
         }
 
-        public fun getBoolean(index: Int): Boolean {
+        public fun getBool(index: Int): Bool {
             var jsonValue = this.elements.get(index)
-            return jsonValue.asBoolean()
+            return jsonValue.asBool()
         }
 
         public fun getJsonObject(index: Int): JsonObject {
@@ -78,37 +82,37 @@ namespace Am.Json {
         }
 
         // Type checking methods
-        public fun isString(index: Int): Boolean {
+        public fun isString(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isString()
         }
 
-        public fun isInteger(index: Int): Boolean {
+        public fun isInteger(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isInteger()
         }
 
-        public fun isDouble(index: Int): Boolean {
+        public fun isDouble(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isDouble()
         }
 
-        public fun isBoolean(index: Int): Boolean {
+        public fun isBool(index: Int): Bool {
             var jsonValue = this.elements.get(index)
-            return jsonValue.isBoolean()
+            return jsonValue.isBool()
         }
 
-        public fun isNull(index: Int): Boolean {
+        public fun isNull(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isNull()
         }
 
-        public fun isObject(index: Int): Boolean {
+        public fun isObject(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isObject()
         }
 
-        public fun isArray(index: Int): Boolean {
+        public fun isArray(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isArray()
         }
@@ -133,7 +137,7 @@ namespace Am.Json {
             return this.elements.size()
         }
 
-        public fun isEmpty(): Boolean {
+        public fun isEmpty(): Bool {
             return this.elements.isEmpty()
         }
 
@@ -141,7 +145,7 @@ namespace Am.Json {
             return this.elements.indexOf(value)
         }
 
-        public fun contains(value: JsonValue): Boolean {
+        public fun contains(value: JsonValue): Bool {
             return this.elements.contains(value)
         }
     }
