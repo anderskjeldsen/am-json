@@ -7,27 +7,27 @@ namespace Am.Json {
         private var properties: HashMap<String, JsonValue> = new HashMap<String, JsonValue>()
 
         // Put methods for different types
-        public fun put(key: String, value: String): Void {
+        public fun putString(key: String, value: String): Void {
             this.properties.put(key, JsonValue.fromString(value))
         }
 
-        public fun put(key: String, value: Int): Void {
+        public fun putInt(key: String, value: Int): Void {
             this.properties.put(key, JsonValue.fromInteger(value))
         }
 
-        public fun put(key: String, value: Double): Void {
+        public fun putDouble(key: String, value: Double): Void {
             this.properties.put(key, JsonValue.fromDouble(value))
         }
 
-        public fun put(key: String, value: Boolean): Void {
+        public fun putBoolean(key: String, value: Boolean): Void {
             this.properties.put(key, JsonValue.fromBoolean(value))
         }
 
-        public fun put(key: String, value: JsonObject): Void {
+        public fun putObject(key: String, value: JsonObject): Void {
             this.properties.put(key, JsonValue.fromObject(value))
         }
 
-        public fun put(key: String, value: JsonArray): Void {
+        public fun putArray(key: String, value: JsonArray): Void {
             this.properties.put(key, JsonValue.fromArray(value))
         }
 

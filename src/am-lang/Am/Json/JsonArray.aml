@@ -6,27 +6,29 @@ namespace Am.Json {
         private var elements: List<JsonValue> = List.newList<JsonValue>()
 
         // Add methods for different types
-        public fun add(value: String): Void {
+        public fun addString(value: String): Void {
             this.elements.add(JsonValue.fromString(value))
         }
 
-        public fun add(value: Int): Void {
+        public fun addInt(value: Int): Void {
             this.elements.add(JsonValue.fromInteger(value))
         }
 
-        public fun add(value: Double): Void {
+        /*
+        public fun addDouble(value: Double): Void {
             this.elements.add(JsonValue.fromDouble(value))
         }
+            */
 
-        public fun add(value: Boolean): Void {
+        public fun addBoolean(value: Boolean): Void {
             this.elements.add(JsonValue.fromBoolean(value))
         }
 
-        public fun add(value: JsonObject): Void {
+        public fun addObject(value: JsonObject): Void {
             this.elements.add(JsonValue.fromObject(value))
         }
 
-        public fun add(value: JsonArray): Void {
+        public fun addArray(value: JsonArray): Void {
             this.elements.add(JsonValue.fromArray(value))
         }
 

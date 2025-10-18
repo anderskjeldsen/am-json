@@ -8,10 +8,10 @@ namespace Tests {
         test testJsonObjectWithTypes() {
             // Create a JsonObject with typed values
             var person = new JsonObject()
-            person.put("name", "John Doe")
-            person.put("age", 30)
-            person.put("salary", 75000.50)
-            person.put("active", true)
+            person.putString("name", "John Doe")
+            person.putInt("age", 30)
+            person.putDouble("salary", 75000.50)
+            person.putBoolean("active", true)
             person.putNull("manager")
             
             // Test type checking
@@ -35,10 +35,10 @@ namespace Tests {
 
         test testJsonArrayWithTypes() {
             var numbers = new JsonArray()
-            numbers.add(1)
-            numbers.add(2.5)
-            numbers.add("three")
-            numbers.add(true)
+            numbers.addInt(1)
+            numbers.addDouble(2.5)
+            numbers.addString("three")
+            numbers.addBoolean(true)
             numbers.addNull()
             
             // Test type checking
@@ -62,21 +62,21 @@ namespace Tests {
 
         test testNestedJsonStructure() {
             var company = new JsonObject()
-            company.put("name", "Tech Corp")
+            company.putString("name", "Tech Corp")
             
             var employees = new JsonArray()
             
             var employee1 = new JsonObject()
-            employee1.put("name", "Alice")
-            employee1.put("id", 1)
-            employees.add(employee1)
+            employee1.putString("name", "Alice")
+            employee1.putInt("id", 1)
+            employees.addObject(employee1)
             
             var employee2 = new JsonObject()
-            employee2.put("name", "Bob")
-            employee2.put("id", 2)
-            employees.add(employee2)
+            employee2.putString("name", "Bob")
+            employee2.putInt("id", 2)
+            employees.addObject(employee2)
             
-            company.put("employees", employees)
+            company.putArray("employees", employees)
             
             // Test nested structure
             assert(company.isObject("employees"))
