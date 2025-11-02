@@ -1,0 +1,45 @@
+namespace Am.Json.Tests {
+    class JsonStringDebugTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+        import Am.Util.Parsers.Text
+
+        test debugStringConstruction() {
+            // Test using String.fromBytes() to create actual quote characters
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
+            
+            // Print what we actually got
+            ("Constructed JSON string: '" + jsonStr + "'").println()
+            ("String length: " + jsonStr.getLength().toString()).println()
+            
+            // Check each character
+            var len = jsonStr.getLength()
+            var i = 0UI
+            while (i < len) {
+                var char = jsonStr.characterAt(i)
+                var charStr = char.toString()
+                ("Character " + i.toString() + ": '" + charStr + "' (code: " + char.toString() + ")").println()
+                i++
+            }
+            
+            Assert.assertTrue(jsonStr.getLength() > 0)
+        }
+        
+        test debugSimpleString() {
+            // Test using String.fromBytes() for quote character
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            ("Quote character: '" + quote + "'").println()
+            ("Quote character code: " + quote.characterAt(0UI).toString()).println()
+            
+            // Build the simplest possible JSON
+            var simple: String = quote + "test" + quote
+            ("Simple quoted string: '" + simple + "'").println()
+            
+            Assert.assertTrue(simple.getLength() == 6)
+        }
+    }
+}

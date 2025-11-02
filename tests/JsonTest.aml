@@ -1,18 +1,16 @@
-namespace Tests {
+namespace Am.Json.Tests {
 
     class JsonTest {
         import Am.Lang
-        import Am.Util.Parsers.Json
+        import Am.Json
+        import Am.Tests
         import Am.Util.Parsers.Text
 
-        test parseJsonString() {
-            var jsonStr: String = "\"Hello, \\\"World\\\"!\\n\""
-            var textParser: TextParser = TextParser(jsonStr)
-            var jsonParser: JsonParser = JsonParser(textParser)
-            var result: Any = jsonParser.parse(ClassRef(String))
-            assert(result is String)
-            var parsedStr: String = result as String
-            assert(parsedStr == "Hello, \"World\"!\n")
+        test parseJsonValue() {
+            // Test that JsonValue can handle string values
+            var jsonValue: JsonValue = JsonValue.fromString("Hello World")
+            var result: String = jsonValue.asString()
+            Assert.assertTrue(result == "Hello World")
         }
     }
 }

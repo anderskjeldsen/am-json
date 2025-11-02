@@ -1,0 +1,36 @@
+namespace Am.Json.Tests {
+    class JsonSimpleParseTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+        import Am.Util.Parsers.Text
+
+        test debugParseDirectString() {
+            // Test parsing the exact string that works in the debug test
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
+            
+            "About to parse JSON".println()
+            jsonStr.println()
+            
+            var textParser: TextParser = new TextParser(jsonStr)
+            "TextParser created".println()
+            
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            "JsonParser created, attempting to parse...".println()
+            
+            try {
+                var result: JsonObject = jsonParser.parseObject()
+                "Parse successful!".println()
+                var name: String = result.getString("name")
+                name.println()
+                Assert.assertTrue(name == "John")
+            } catch (e: Exception) {
+                "Parse failed with exception:".println()
+                e.message.println()
+                throw e
+            }
+        }
+    }
+}

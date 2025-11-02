@@ -3,10 +3,10 @@ AMLC:=amlc.jar
 CMD=java -jar $(AMLC)
 
 build:
-	$(CMD) build . -bt linux-x64 -ll5
+	$(CMD) build . -bt linux-x64 -ll5 -maxOneError
 
 build-force-deps:
-	$(CMD) build . -fld -bt linux-x64 ll 4
+	$(CMD) build . -fld -bt linux-x64 ll 4 -maxOneError
 
 test:
-	$(CMD) test . -bt linux-x64
+	$(CMD) test . -bt linux-x64 -maxOneError

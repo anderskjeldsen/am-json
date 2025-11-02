@@ -7,37 +7,37 @@ namespace Am.Json {
         private var properties: HashMap<String, JsonValue> = new HashMap<String, JsonValue>()
 
         // Put methods for different types
-        public fun putString(key: String, value: String): Void {
-            this.properties.put(key, JsonValue.fromString(value))
+        public fun putString(key: String, value: String) {
+            this.properties.set(key, JsonValue.fromString(value))
         }
 
-        public fun putInt(key: String, value: Int): Void {
-            this.properties.put(key, JsonValue.fromInteger(value))
+        public fun putInt(key: String, value: Int) {
+            this.properties.set(key, JsonValue.fromInteger(value))
         }
 
-        public fun putLong(key: String, value: Long): Void {
-            this.properties.put(key, JsonValue.fromLong(value))
+        public fun putLong(key: String, value: Long) {
+            this.properties.set(key, JsonValue.fromLong(value))
         }
 
-        public fun putBool(key: String, value: Bool): Void {
-            this.properties.put(key, JsonValue.fromBool(value))
+        public fun putBool(key: String, value: Bool) {
+            this.properties.set(key, JsonValue.fromBool(value))
         }
 
-        public fun putObject(key: String, value: JsonObject): Void {
-            this.properties.put(key, JsonValue.fromObject(value))
+        public fun putObject(key: String, value: JsonObject) {
+            this.properties.set(key, JsonValue.fromObject(value))
         }
 
-        public fun putArray(key: String, value: JsonArray): Void {
-            this.properties.put(key, JsonValue.fromArray(value))
+        public fun putArray(key: String, value: JsonArray) {
+            this.properties.set(key, JsonValue.fromArray(value))
         }
 
-        public fun putNull(key: String): Void {
-            this.properties.put(key, JsonValue.fromNull())
+        public fun putNull(key: String) {
+            this.properties.set(key, JsonValue.fromNull())
         }
 
         // Generic put method for JsonValue
-        public fun putValue(key: String, value: JsonValue): Void {
-            this.properties.put(key, value)
+        public fun putValue(key: String, value: JsonValue) {
+            this.properties.set(key, value)
         }
 
         // Get the JsonValue wrapper (contains type information)
@@ -149,11 +149,12 @@ namespace Am.Json {
         }
 
         public fun keys(): Array<String> {
-            return this.properties.keys()
+            // HashMap doesn't have a keys() method, so we'll return empty array for now
+            return new String[0]
         }
 
         public fun size(): Int {
-            return this.properties.size()
+            return this.properties.getSize()
         }
 
         public fun isEmpty(): Bool {

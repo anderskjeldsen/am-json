@@ -6,15 +6,15 @@ namespace Am.Json {
         private var elements: List<JsonValue> = List.newList<JsonValue>()
 
         // Add methods for different types
-        public fun addString(value: String): Void {
+        public fun addString(value: String) {
             this.elements.add(JsonValue.fromString(value))
         }
 
-        public fun addInt(value: Int): Void {
+        public fun addInt(value: Int) {
             this.elements.add(JsonValue.fromInteger(value))
         }
 
-        public fun addLong(value: Long): Void {
+        public fun addLong(value: Long) {
             this.elements.add(JsonValue.fromLong(value))
         }
 
@@ -24,24 +24,24 @@ namespace Am.Json {
         }
             */
 
-        public fun addBool(value: Bool): Void {
+        public fun addBool(value: Bool) {
             this.elements.add(JsonValue.fromBool(value))
         }
 
-        public fun addObject(value: JsonObject): Void {
+        public fun addObject(value: JsonObject) {
             this.elements.add(JsonValue.fromObject(value))
         }
 
-        public fun addArray(value: JsonArray): Void {
+        public fun addArray(value: JsonArray) {
             this.elements.add(JsonValue.fromArray(value))
         }
 
-        public fun addNull(): Void {
+        public fun addNull() {
             this.elements.add(JsonValue.fromNull())
         }
 
         // Generic add method for JsonValue
-        public fun addValue(value: JsonValue): Void {
+        public fun addValue(value: JsonValue) {
             this.elements.add(value)
         }
 
@@ -124,17 +124,17 @@ namespace Am.Json {
         }
 
         // Set methods
-        public fun set(index: Int, value: JsonValue): Void {
+        public fun set(index: Int, value: JsonValue) {
             this.elements.set(index, value)
         }
 
         // Utility methods
         public fun remove(index: Int): JsonValue {
-            return this.elements.remove(index)
+            return this.elements.removeAt(index)
         }
 
         public fun size(): Int {
-            return this.elements.size()
+            return this.elements.getSize()
         }
 
         public fun isEmpty(): Bool {
@@ -142,7 +142,16 @@ namespace Am.Json {
         }
 
         public fun indexOf(value: JsonValue): Int {
-            return this.elements.indexOf(value)
+            // Manual implementation since List doesn't have indexOf
+            var i = 0
+            while(i < this.elements.getSize()) {
+                var element = this.elements.get(i)
+                if (element.toString() == value.toString()) {
+                    return i
+                }
+                i++
+            }
+            return -1  // Not found
         }
 
         public fun contains(value: JsonValue): Bool {

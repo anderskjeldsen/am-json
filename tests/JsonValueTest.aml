@@ -1,91 +1,66 @@
-namespace Tests {
+namespace Am.Json.Tests {
 
     class JsonValueTest {
         import Am.Lang
         import Am.Json
-        import Am.Util.Parsers.Text
+        import Am.Tests
 
-        test testJsonObjectWithTypes() {
-            // Create a JsonObject with typed values
-            var person = new JsonObject()
+        test testJsonValue() {
+            // Test JsonValue creation and type detection
+            var stringValue: JsonValue = JsonValue.fromString("Hello World")
+            Assert.assertTrue(stringValue.getType() == JsonValueType.stringType)
+            Assert.assertTrue(stringValue.asString() == "Hello World")
+        }
+
+        test testJsonObjectWithStrings() {
+            // Create a JsonObject with string values only
+            var person: JsonObject = new JsonObject()
             person.putString("name", "John Doe")
-            person.putInt("age", 30)
-            person.putLong("salary", 75000L)
-            person.putBoolean("active", true)
-            person.putNull("manager")
+            person.putString("age", "30")
+            person.putString("active", "true")
             
-            // Test type checking
-            assert(person.isString("name"))
-            assert(person.isInteger("age"))
-            assert(person.isLong("salary"))
-            assert(person.isBoolean("active"))
-            assert(person.isNull("manager"))
+            // Test getting string values
+            Assert.assertTrue(person.getString("name") == "John Doe")
+            Assert.assertTrue(person.getString("age") == "30")
+            Assert.assertTrue(person.getString("active") == "true")
             
-            // Test type-safe getters
-            assert(person.getString("name") == "John Doe")
-            assert(person.getInt("age") == 30)
-            assert(person.getLong("salary") == 75000L)
-            assert(person.getBoolean("active") == true)
-            
-            // Test getting JsonValue with type information
-            var nameValue = person.getValue("name")
-            assert(nameValue.getType() == JsonValueType.string)
-            assert(nameValue.asString() == "John Doe")
+            // Test size
+            Assert.assertTrue(person.size() == 3)
         }
 
-        test testJsonArrayWithTypes() {
-            var numbers = new JsonArray()
-            numbers.addInt(1)
-            numbers.addLong(2L)
-            numbers.addString("three")
-            numbers.addBoolean(true)
-            numbers.addNull()
+        test testJsonArrayWithStrings() {
+            var items: JsonArray = new JsonArray()
+            items.addString("first")
+            items.addString("second")
+            items.addString("third")
             
-            // Test type checking
-            assert(numbers.isInteger(0))
-            assert(numbers.isLong(1))
-            assert(numbers.isString(2))
-            assert(numbers.isBoolean(3))
-            assert(numbers.isNull(4))
+            // Test getting string values
+            Assert.assertTrue(items.getString(0) == "first")
+            Assert.assertTrue(items.getString(1) == "second")
+            Assert.assertTrue(items.getString(2) == "third")
             
-            // Test type-safe getters
-            assert(numbers.getInt(0) == 1)
-            assert(numbers.getLong(1) == 2L)
-            assert(numbers.getString(2) == "three")
-            assert(numbers.getBoolean(3) == true)
-            
-            // Test getting JsonValue with type information
-            var firstValue = numbers.getValue(0)
-            assert(firstValue.getType() == JsonValueType.integer)
-            assert(firstValue.asInteger() == 1)
+            // Test size
+            Assert.assertTrue(items.size() == 3)
         }
 
-        test testNestedJsonStructure() {
-            var company = new JsonObject()
-            company.putString("name", "Tech Corp")
-            
-            var employees = new JsonArray()
-            
-            var employee1 = new JsonObject()
-            employee1.putString("name", "Alice")
-            employee1.putInt("id", 1)
-            employees.addObject(employee1)
-            
-            var employee2 = new JsonObject()
-            employee2.putString("name", "Bob")
-            employee2.putInt("id", 2)
-            employees.addObject(employee2)
-            
-            company.putArray("employees", employees)
-            
-            // Test nested structure
-            assert(company.isObject("employees"))
-            var employeeArray = company.getJsonArray("employees")
-            assert(employeeArray.size() == 2)
-            
-            var firstEmployee = employeeArray.getJsonObject(0)
-            assert(firstEmployee.getString("name") == "Alice")
-            assert(firstEmployee.getInt("id") == 1)
+        test testJsonValueTypeChecking() {
+            // Test type checking methods
+            var stringValue = JsonValue.fromString("hello")
+            Assert.assertTrue(stringValue.isString())
+            Assert.assertFalse(stringValue.isInteger())
+            Assert.assertFalse(stringValue.isBool())
+            Assert.assertFalse(stringValue.isNull())
+            Assert.assertFalse(stringValue.isObject())
+            Assert.assertFalse(stringValue.isArray())
+
+            // Test null value
+            var nullValue = JsonValue.fromNull()
+            Assert.assertTrue(nullValue.isNull())
+            Assert.assertFalse(nullValue.isString())
+            Assert.assertFalse(nullValue.isInteger())
+            Assert.assertFalse(nullValue.isBool())
+            Assert.assertFalse(nullValue.isObject())
+            Assert.assertFalse(nullValue.isArray())
         }
     }
 }

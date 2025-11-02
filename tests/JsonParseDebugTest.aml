@@ -1,0 +1,46 @@
+namespace Am.Json.Tests {
+    class JsonParseDebugTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+        import Am.Util.Parsers.Text
+        
+        test debugCharacters() {
+            "=== Debug Character Analysis ===".println()
+            
+            // Test basic quote character
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            "Quote character: ".print()
+            quote.println()
+            
+            // Test our JSON string construction
+            var jsonBytes: UByte[] = [123UB, 34UB, 110UB, 97UB, 109UB, 101UB, 34UB, 58UB, 34UB, 74UB, 111UB, 104UB, 110UB, 34UB, 125UB]
+            var jsonStr = String.fromBytes(jsonBytes, "UTF-8")
+            "JSON String: ".print()
+            jsonStr.println()
+            
+            var strLen = jsonStr.length()
+            "JSON String length: ".print()
+            strLen.toString().println()
+            
+            // Test TextParser initialization
+            "=== TextParser Analysis ===".println()
+            var textParser = new TextParser(jsonStr)
+            "TextParser created".println()
+            
+            // Test parser state
+            "First character from parser: ".print()
+            var firstChar = textParser.peekChar()
+            firstChar.toString().println()
+            
+            // Skip the opening brace and check next char
+            textParser.skip(1UI)
+            "Second character from parser: ".print()
+            var secondChar = textParser.peekChar()
+            secondChar.toString().println()
+            
+            "Debug complete".println()
+        }
+    }
+}

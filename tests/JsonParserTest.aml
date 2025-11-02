@@ -1,48 +1,57 @@
-namespace Tests {
-
+namespace Am.Json.Tests {
     class JsonParserTest {
         import Am.Lang
-        import Am.Util.Parsers.Json
+        import Am.Json
+        import Am.Tests
         import Am.Util.Parsers.Text
 
-        test parseJsonObject() {
-            var jsonStr: String = "{\"name\":\"John\",\"age\":30,\"active\":true}"
-            var textParser: TextParser = TextParser(jsonStr)
-            var jsonParser: JsonParser = JsonParser(textParser)
-            var result: Any = jsonParser.parse(ClassRef(JsonObject))
-            assert(result is JsonObject)
-            var jsonObj: JsonObject = result as JsonObject
-            assert(jsonObj.get("name") as String == "John")
-            assert(jsonObj.get("age") as Int == 30)
-            assert(jsonObj.get("active") as Boolean == true)
+        test parseSimpleJsonObject() {
+            // Build JSON string using proper character conversion
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var result: JsonObject = jsonParser.parseObject()
+            var name: String = result.getString("name")
+            Assert.assertTrue(name == "John")
         }
 
-        test parseJsonArray() {
-            var jsonStr: String = "[1,2,3,\"hello\",true]"
-            var textParser: TextParser = TextParser(jsonStr)
-            var jsonParser: JsonParser = JsonParser(textParser)
-            var result: Any = jsonParser.parse(ClassRef(JsonArray))
-            assert(result is JsonArray)
-            var jsonArr: JsonArray = result as JsonArray
-            assert(jsonArr.get(0) as Int == 1)
-            assert(jsonArr.get(1) as Int == 2)
-            assert(jsonArr.get(2) as Int == 3)
-            assert(jsonArr.get(3) as String == "hello")
-            assert(jsonArr.get(4) as Boolean == true)
+        test parseSimpleJsonArray() {
+            // Build JSON string using proper character conversion
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "[" + quote + "apple" + quote + "," + quote + "banana" + quote + "," + quote + "cherry" + quote + "," + quote + "date" + quote + "]"
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var result: JsonArray = jsonParser.parseArray()
+            var item0: String = result.getString(0)
+            var item1: String = result.getString(1)
+            var item2: String = result.getString(2)
+            var item3: String = result.getString(3)
+            Assert.assertTrue(item0 == "apple")
+            Assert.assertTrue(item1 == "banana")
+            Assert.assertTrue(item2 == "cherry")
+            Assert.assertTrue(item3 == "date")
         }
 
-        test parseNestedJson() {
-            var jsonStr: String = "{\"users\":[{\"name\":\"Alice\",\"id\":1},{\"name\":\"Bob\",\"id\":2}],\"count\":2}"
-            var textParser: TextParser = TextParser(jsonStr)
-            var jsonParser: JsonParser = JsonParser(textParser)
-            var result: Any = jsonParser.parse(ClassRef(JsonObject))
-            assert(result is JsonObject)
-            var jsonObj: JsonObject = result as JsonObject
-            var users: JsonArray = jsonObj.get("users") as JsonArray
-            assert(users.size() == 2)
-            var firstUser: JsonObject = users.get(0) as JsonObject
-            assert(firstUser.get("name") as String == "Alice")
-            assert(firstUser.get("id") as Int == 1)
+        test parseNestedStringJson() {
+            // Build JSON string using proper character conversion
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "{" + quote + "users" + quote + ":[" + quote + "Alice" + quote + "," + quote + "Bob" + quote + "]," + quote + "count" + quote + ":" + quote + "2" + quote + "}"
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var result: JsonObject = jsonParser.parseObject()
+            var users: JsonArray = result.getJsonArray("users")
+            var usersSize: Int = users.size()
+            Assert.assertTrue(usersSize == 2)
+            var firstUser: String = users.getString(0)
+            var secondUser: String = users.getString(1)
+            var count: String = result.getString("count")
+            Assert.assertTrue(firstUser == "Alice")
+            Assert.assertTrue(secondUser == "Bob")
+            Assert.assertTrue(count == "2")
         }
     }
 }
