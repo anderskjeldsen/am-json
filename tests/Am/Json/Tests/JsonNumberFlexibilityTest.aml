@@ -1,0 +1,158 @@
+namespace Am.Json.Tests {
+
+    class JsonNumberFlexibilityTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Util.Parsers.Text
+
+        test testNumberTypeFlexibility() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON with a number that can be parsed as different types
+            var json = "{" + quote + "value" + quote + ":42}"
+            "Testing number flexibility with: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var value = jsonObject.getValue("value")
+            
+            // Verify it's stored as a number type
+            if (!value.isNumber()) {
+                throw new Exception("Value should be number type")
+            }
+            
+            // Test that we can extract the same number as different types
+            var asInt = value.asInteger()
+            var asLong = value.asLong()
+            var asByte = value.asByte()
+            var asShort = value.asShort()
+            var asUInt = value.asUInteger()
+            var asULong = value.asULong()
+            var asUByte = value.asUByte()
+            var asUShort = value.asUShort()
+            
+            "Value as Int: ${asInt}".println()
+            "Value as Long: ${asLong}".println()
+            "Value as Byte: ${asByte}".println()
+            "Value as Short: ${asShort}".println()
+            "Value as UInt: ${asUInt}".println()
+            "Value as ULong: ${asULong}".println()
+            "Value as UByte: ${asUByte}".println()
+            "Value as UShort: ${asUShort}".println()
+            
+            // Verify all conversions are correct
+            if (asInt != 42 || asLong != 42L || asByte != 42B || asShort != 42S ||
+                asUInt != 42UI || asULong != 42UL || asUByte != 42UB || asUShort != 42US) {
+                throw new Exception("Number conversions failed")
+            }
+            
+            "Number flexibility test passed!".println()
+        }
+
+        test testJsonArrayNumberFlexibility() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Test with JsonArray's new number methods
+            var jsonArray = new JsonArray()
+            
+            // Add numbers using different methods
+            jsonArray.addByte(100B)
+            jsonArray.addShort(1000S)
+            jsonArray.addInt(50000)
+            jsonArray.addLong(9876543210L)
+            jsonArray.addUByte(200UB)
+            jsonArray.addUShort(60000US)
+            jsonArray.addUInt(4000000000UI)
+            jsonArray.addULong(18446744073709551615UL)
+            
+            "JsonArray size: ${jsonArray.size()}".println()
+            
+            // Verify we can get them back as different types
+            var firstValue = jsonArray.getValue(0)
+            if (!firstValue.isNumber()) {
+                throw new Exception("Array value should be number type")
+            }
+            
+            // Test the convenience methods
+            var byteVal: Byte = jsonArray.getByte(0)
+            var shortVal: Short = jsonArray.getShort(1)
+            var intVal: Int = jsonArray.getInt(2)
+            var longVal: Long = jsonArray.getLong(3)
+            var ubyteVal: UByte = jsonArray.getUByte(4)
+            var ushortVal: UShort = jsonArray.getUShort(5)
+            var uintVal: UInt = jsonArray.getUInt(6)
+            var ulongVal: ULong = jsonArray.getULong(7)
+            
+            "Retrieved byte: ${byteVal}".println()
+            "Retrieved short: ${shortVal}".println()
+            "Retrieved int: ${intVal}".println()
+            "Retrieved long: ${longVal}".println()
+            "Retrieved ubyte: ${ubyteVal}".println()
+            "Retrieved ushort: ${ushortVal}".println()
+            "Retrieved uint: ${uintVal}".println()
+            "Retrieved ulong: ${ulongVal}".println()
+            
+            if (byteVal != 100B || shortVal != 1000S || intVal != 50000 || longVal != 9876543210L ||
+                ubyteVal != 200UB || ushortVal != 60000US || uintVal != 4000000000UI || ulongVal != 18446744073709551615UL) {
+                throw new Exception("Array number retrieval failed")
+            }
+            
+            "JsonArray number flexibility test passed!".println()
+        }
+
+        test testJsonObjectNumberFlexibility() {
+            var jsonObject = new JsonObject()
+            
+            // Test JsonObject's new number methods
+            jsonObject.putByte("byte_val", 127B)
+            jsonObject.putShort("short_val", 32767S)
+            jsonObject.putInt("int_val", 2147483647)
+            jsonObject.putLong("long_val", 9223372036854775807L)
+            jsonObject.putUByte("ubyte_val", 255UB)
+            jsonObject.putUShort("ushort_val", 65535US)
+            jsonObject.putUInt("uint_val", 4294967295UI)
+            jsonObject.putULong("ulong_val", 18446744073709551615UL)
+            
+            // Verify we can retrieve them
+            var byteVal: Byte = jsonObject.getByte("byte_val")
+            var shortVal: Short = jsonObject.getShort("short_val")
+            var intVal: Int = jsonObject.getInt("int_val")
+            var longVal: Long = jsonObject.getLong("long_val")
+            var ubyteVal: UByte = jsonObject.getUByte("ubyte_val")
+            var ushortVal: UShort = jsonObject.getUShort("ushort_val")
+            var uintVal: UInt = jsonObject.getUInt("uint_val")
+            var ulongVal: ULong = jsonObject.getULong("ulong_val")
+            
+            "Object byte: ${byteVal}".println()
+            "Object short: ${shortVal}".println()
+            "Object int: ${intVal}".println()
+            "Object long: ${longVal}".println()
+            "Object ubyte: ${ubyteVal}".println()
+            "Object ushort: ${ushortVal}".println()
+            "Object uint: ${uintVal}".println()
+            "Object ulong: ${ulongVal}".println()
+            
+            // Check all values using isNumber
+            if (!jsonObject.isNumber("byte_val") || !jsonObject.isNumber("short_val") ||
+                !jsonObject.isNumber("int_val") || !jsonObject.isNumber("long_val") ||
+                !jsonObject.isNumber("ubyte_val") || !jsonObject.isNumber("ushort_val") ||
+                !jsonObject.isNumber("uint_val") || !jsonObject.isNumber("ulong_val")) {
+                throw new Exception("All values should be number types")
+            }
+            
+            if (byteVal != 127B 
+                || shortVal != 32767S 
+                || intVal != 2147483647 
+                || longVal != 9223372036854775807L ||
+                ubyteVal != 255UB || ushortVal != 65535US || uintVal != 4294967295UI || ulongVal != 18446744073709551615UL) {
+                throw new Exception("Object number retrieval failed")
+            }
+            
+            "JsonObject number flexibility test passed!".println()
+        }
+    }
+}

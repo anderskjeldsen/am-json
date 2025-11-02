@@ -2,12 +2,11 @@ namespace Am.Json {
 
     enum JsonValueType {
         stringType = 1
-        intType = 2
-        longType = 3
-        boolType = 4
-        nullType = 5
-        objectType = 6
-        arrayType = 7
+        numberType = 2
+        boolType = 3
+        nullType = 4
+        objectType = 5
+        arrayType = 6
     }
 
     class JsonValue(private var value: Any?, private var type: JsonValueType) {
@@ -25,12 +24,16 @@ namespace Am.Json {
             return this.type == JsonValueType.stringType
         }
 
+        public fun isNumber(): Bool {
+            return this.type == JsonValueType.numberType
+        }
+
         public fun isInteger(): Bool {
-            return this.type == JsonValueType.intType
+            return this.type == JsonValueType.numberType
         }
 
         public fun isLong(): Bool {
-            return this.type == JsonValueType.longType
+            return this.type == JsonValueType.numberType
         }
 
         public fun isBool(): Bool {
@@ -50,8 +53,7 @@ namespace Am.Json {
         }
 
         public fun isDouble(): Bool {
-            // This JSON library doesn't support double type, only string-based values
-            return false
+            return this.type == JsonValueType.numberType
         }
 
         public fun asString(): String {
@@ -63,20 +65,98 @@ namespace Am.Json {
         }
 
         public fun asInteger(): Int {
-            if (this.type == JsonValueType.intType) {
-                return this.value as Int
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Int.parse(stringValue)
             } else {
-                throw new Exception("JsonValue is not an integer")
+                throw new Exception("JsonValue is not a number")
             }
         }
 
         public fun asLong(): Long {
-            if (this.type == JsonValueType.longType) {
-                return this.value as Long
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Long.parse(stringValue)
             } else {
-                throw new Exception("JsonValue is not a long")
+                throw new Exception("JsonValue is not a number")
             }
         }
+
+        public fun asByte(): Byte {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Byte.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asShort(): Short {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Short.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asUInteger(): UInt {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return UInt.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asULong(): ULong {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return ULong.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asUByte(): UByte {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return UByte.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asUShort(): UShort {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return UShort.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        // Note: AmLang doesn't have built-in Double/Float parsing yet
+        // These methods will need to be implemented when floating point support is added
+        /*
+        public fun asDouble(): Double {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Double.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+
+        public fun asFloat(): Float {
+            if (this.type == JsonValueType.numberType) {
+                var stringValue = this.value as String
+                return Float.parse(stringValue)
+            } else {
+                throw new Exception("JsonValue is not a number")
+            }
+        }
+        */
 
         public fun asBool(): Bool {
             if (this.type == JsonValueType.boolType) {
@@ -106,12 +186,40 @@ namespace Am.Json {
             return new JsonValue(value, JsonValueType.stringType)
         }
 
+        static fun fromNumber(value: String): JsonValue {
+            return new JsonValue(value, JsonValueType.numberType)
+        }
+
         static fun fromInteger(value: Int): JsonValue {
-            return new JsonValue(value, JsonValueType.intType)
+            return new JsonValue(value.toString(), JsonValueType.numberType)
         }
 
         static fun fromLong(value: Long): JsonValue {
-            return new JsonValue(value, JsonValueType.longType)
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromByte(value: Byte): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromShort(value: Short): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromUInteger(value: UInt): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromULong(value: ULong): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromUByte(value: UByte): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromUShort(value: UShort): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
         }
 
         static fun fromBool(value: Bool): JsonValue {
@@ -134,10 +242,8 @@ namespace Am.Json {
         override fun toString(): String {
             if (this.type == JsonValueType.stringType) {
                 return this.asString()
-            } else if (this.type == JsonValueType.intType) {
-                return this.asInteger().toString()
-            } else if (this.type == JsonValueType.longType) {
-                return this.asLong().toString()
+            } else if (this.type == JsonValueType.numberType) {
+                return this.value as String
             } else if (this.type == JsonValueType.boolType) {
                 if (this.asBool()) {
                     return "true"

@@ -19,6 +19,34 @@ namespace Am.Json {
             this.properties.set(key, JsonValue.fromLong(value))
         }
 
+        public fun putByte(key: String, value: Byte) {
+            this.properties.set(key, JsonValue.fromByte(value))
+        }
+
+        public fun putShort(key: String, value: Short) {
+            this.properties.set(key, JsonValue.fromShort(value))
+        }
+
+        public fun putUInt(key: String, value: UInt) {
+            this.properties.set(key, JsonValue.fromUInteger(value))
+        }
+
+        public fun putULong(key: String, value: ULong) {
+            this.properties.set(key, JsonValue.fromULong(value))
+        }
+
+        public fun putUByte(key: String, value: UByte) {
+            this.properties.set(key, JsonValue.fromUByte(value))
+        }
+
+        public fun putUShort(key: String, value: UShort) {
+            this.properties.set(key, JsonValue.fromUShort(value))
+        }
+
+        public fun putNumber(key: String, value: String) {
+            this.properties.set(key, JsonValue.fromNumber(value))
+        }
+
         public fun putBool(key: String, value: Bool) {
             this.properties.set(key, JsonValue.fromBool(value))
         }
@@ -70,6 +98,54 @@ namespace Am.Json {
             throw new Exception("Key '" + key + "' not found")
         }
 
+        public fun getByte(key: String): Byte {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asByte()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getShort(key: String): Short {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asShort()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getUInt(key: String): UInt {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asUInteger()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getULong(key: String): ULong {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asULong()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getUByte(key: String): UByte {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asUByte()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getUShort(key: String): UShort {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asUShort()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
         public fun getBool(key: String): Bool {
             var jsonValue = this.properties.get(key)
             if (jsonValue != null) {
@@ -98,6 +174,11 @@ namespace Am.Json {
         public fun isString(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isString()
+        }
+
+        public fun isNumber(key: String): Bool {
+            var jsonValue = this.properties.get(key)
+            return jsonValue != null && jsonValue.isNumber()
         }
 
         public fun isInteger(key: String): Bool {

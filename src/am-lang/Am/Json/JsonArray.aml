@@ -18,6 +18,34 @@ namespace Am.Json {
             this.elements.add(JsonValue.fromLong(value))
         }
 
+        public fun addByte(value: Byte) {
+            this.elements.add(JsonValue.fromByte(value))
+        }
+
+        public fun addShort(value: Short) {
+            this.elements.add(JsonValue.fromShort(value))
+        }
+
+        public fun addUInt(value: UInt) {
+            this.elements.add(JsonValue.fromUInteger(value))
+        }
+
+        public fun addULong(value: ULong) {
+            this.elements.add(JsonValue.fromULong(value))
+        }
+
+        public fun addUByte(value: UByte) {
+            this.elements.add(JsonValue.fromUByte(value))
+        }
+
+        public fun addUShort(value: UShort) {
+            this.elements.add(JsonValue.fromUShort(value))
+        }
+
+        public fun addNumber(value: String) {
+            this.elements.add(JsonValue.fromNumber(value))
+        }
+
         /*
         public fun addDouble(value: Double): Void {
             this.elements.add(JsonValue.fromDouble(value))
@@ -66,6 +94,36 @@ namespace Am.Json {
             return jsonValue.asLong()
         }
 
+        public fun getByte(index: Int): Byte {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asByte()
+        }
+
+        public fun getShort(index: Int): Short {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asShort()
+        }
+
+        public fun getUInt(index: Int): UInt {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asUInteger()
+        }
+
+        public fun getULong(index: Int): ULong {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asULong()
+        }
+
+        public fun getUByte(index: Int): UByte {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asUByte()
+        }
+
+        public fun getUShort(index: Int): UShort {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asUShort()
+        }
+
         public fun getBool(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.asBool()
@@ -85,6 +143,11 @@ namespace Am.Json {
         public fun isString(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isString()
+        }
+
+        public fun isNumber(index: Int): Bool {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.isNumber()
         }
 
         public fun isInteger(index: Int): Bool {

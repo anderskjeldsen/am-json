@@ -146,10 +146,18 @@ namespace Am.Json {
             } else if (c == 91US) { // '['
                 return JsonValue.fromArray(this.parseJsonArray())
             } else {
-                // For simplicity, treat everything else as a string
-                // This handles numbers, booleans, null as string literals
+                // Parse as raw value (number, boolean, null)
                 var str = this.parser.parseUntil((ch) => return ch == 32US || ch == 9US || ch == 10US || ch == 13US || ch == 44US || ch == 93US || ch == 125US)
-                return JsonValue.fromString(str)
+                
+                // Check for specific literal values
+                if (str == "true" || str == "false") {
+                    return JsonValue.fromBool(str == "true")
+                } else if (str == "null") {
+                    return JsonValue.fromNull()
+                } else {
+                    // Treat as number (stored as string, parsed on demand)
+                    return JsonValue.fromNumber(str)
+                }
             }
         }
 

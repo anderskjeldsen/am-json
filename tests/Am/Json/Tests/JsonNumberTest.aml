@@ -1,0 +1,282 @@
+namespace Am.Json.Tests {
+
+    class JsonNumberTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Util.Parsers.Text
+
+        test testParseSimpleInteger() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON with integer value: {"age":25}
+            var json = "{" + quote + "age" + quote + ":25}"
+            "Testing JSON with integer: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var ageValue = jsonObject.getValue("age")
+            var ageValueStr = ageValue.getValue()
+            var ageTypeStr = ageValue.getType().toString()
+            "Age value: ${ageValueStr}".println()
+            "Age value type: ${ageTypeStr}".println()
+            
+            // Should now be treated as number type
+            if (!ageValue.isNumber()) {
+                throw new Exception("Expected age to be parsed as number")
+            }
+            
+            if (ageValueStr != "25") {
+                throw new Exception("Expected age value to be '25', got: ${ageValueStr}")
+            }
+            
+            // Test number parsing to different types
+            var ageAsInt = ageValue.asInteger()
+            var ageAsByte = ageValue.asByte()
+            if (ageAsInt != 25 || ageAsByte != 25B) {
+                throw new Exception("Number conversion failed")
+            }
+            
+            "Simple integer test passed".println()
+        }
+
+        test testParseSimpleFloat() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON with float value: {"price":19.99}
+            var json = "{" + quote + "price" + quote + ":19.99}"
+            "Testing JSON with float: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var priceValue = jsonObject.getValue("price")
+            "Price value: ${priceValue.getValue()}".println()
+            "Price value type: ${priceValue.getType()}".println()
+            
+            // Should now be treated as number type
+            if (!priceValue.isNumber()) {
+                throw new Exception("Expected price to be parsed as number")
+            }
+            
+            if (priceValue.getValue() != "19.99") {
+                throw new Exception("Expected price value to be '19.99', got: ${priceValue.getValue()}")
+            }
+            
+            // Test that we can parse this as different numeric types
+            // Note: For float values, integer parsing should work for whole numbers only
+            var priceString = priceValue.getValue()
+            if (priceString != "19.99") {
+                throw new Exception("Price string value incorrect")
+            }
+            
+            "Simple float test passed".println()
+        }
+
+        test testParseMixedDataTypes() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON with mixed types: {"name":"John","age":30,"height":5.9}
+            var json = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "," + 
+                      quote + "age" + quote + ":30," + 
+                      quote + "height" + quote + ":5.9}"
+            "Testing JSON with mixed types: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            // Test string value
+            var nameValue = jsonObject.getValue("name")
+            "Name value: ${nameValue.getValue()}".println()
+            if (!nameValue.isString() || nameValue.getValue() != "John") {
+                throw new Exception("Name parsing failed")
+            }
+            
+            // Test integer value - should now be number type
+            var ageValue = jsonObject.getValue("age")
+            "Age value: ${ageValue.getValue()}".println()
+            if (!ageValue.isNumber() || ageValue.getValue() != "30") {
+                throw new Exception("Age parsing failed")
+            }
+            
+            // Test that we can convert to integer
+            var ageAsInt = ageValue.asInteger()
+            if (ageAsInt != 30) {
+                throw new Exception("Age conversion to int failed")
+            }
+            
+            // Test float value - should now be number type
+            var heightValue = jsonObject.getValue("height")
+            "Height value: ${heightValue.getValue()}".println()
+            if (!heightValue.isNumber() || heightValue.getValue() != "5.9") {
+                throw new Exception("Height parsing failed")
+            }
+            
+            "Mixed data types test passed".println()
+        }
+
+        test testParseArrayWithNumbers() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON array with numbers: {"scores":[85,92,78,95]}
+            var json = "{" + quote + "scores" + quote + ":[85,92,78,95]}"
+            "Testing JSON array with numbers: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var scoresValue = jsonObject.getValue("scores")
+            "Scores value type: ${scoresValue.getType()}".println()
+            
+            if (!scoresValue.isArray()) {
+                throw new Exception("Expected scores to be an array")
+            }
+            
+            var scoresArray = scoresValue.asArray()
+            var arraySize: Int = scoresArray.size()
+            "Array size: ${arraySize}".println()
+            
+            if (arraySize != 4) {
+                throw new Exception("Expected 4 scores, got: ${arraySize}")
+            }
+            
+            // Check individual scores - should be numbers now
+            var score1 = scoresArray.getValue(0)
+            var score2 = scoresArray.getValue(1)
+            var score3 = scoresArray.getValue(2)
+            var score4 = scoresArray.getValue(3)
+            
+            "Score 1: ${score1.getValue()}".println()
+            "Score 2: ${score2.getValue()}".println()
+            "Score 3: ${score3.getValue()}".println()
+            "Score 4: ${score4.getValue()}".println()
+            
+            // Verify they are numbers and have correct values
+            if (!score1.isNumber() || score1.getValue() != "85" ||
+                !score2.isNumber() || score2.getValue() != "92" || 
+                !score3.isNumber() || score3.getValue() != "78" || 
+                !score4.isNumber() || score4.getValue() != "95") {
+                throw new Exception("Score values don't match expected or are not numbers")
+            }
+            
+            // Test number conversion
+            var score1Int = score1.asInteger()
+            if (score1Int != 85) {
+                throw new Exception("Score 1 conversion failed")
+            }
+            
+            "Array with numbers test passed".println()
+        }
+
+        test testParseNestedObjectWithNumbers() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create nested JSON: {"person":{"name":"Alice","details":{"age":28,"salary":50000.50}}}
+            var json = "{" + quote + "person" + quote + ":{" + 
+                      quote + "name" + quote + ":" + quote + "Alice" + quote + "," +
+                      quote + "details" + quote + ":{" +
+                      quote + "age" + quote + ":28," +
+                      quote + "salary" + quote + ":50000.50" +
+                      "}}}"
+            "Testing nested JSON with numbers: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var personValue = jsonObject.getValue("person")
+            if (!personValue.isObject()) {
+                throw new Exception("Expected person to be an object")
+            }
+            
+            var personObject = personValue.asObject()
+            var nameValue = personObject.getValue("name")
+            if (nameValue.getValue() != "Alice") {
+                throw new Exception("Name should be Alice")
+            }
+            
+            var detailsValue = personObject.getValue("details")
+            if (!detailsValue.isObject()) {
+                throw new Exception("Expected details to be an object")
+            }
+            
+            var detailsObject = detailsValue.asObject()
+            var ageValue = detailsObject.getValue("age")
+            var salaryValue = detailsObject.getValue("salary")
+            
+            "Nested age: ${ageValue.getValue()}".println()
+            "Nested salary: ${salaryValue.getValue()}".println()
+            
+            // Both should be numbers now
+            if (!ageValue.isNumber() || ageValue.getValue() != "28") {
+                throw new Exception("Age should be number type with value 28")
+            }
+            
+            if (!salaryValue.isNumber() || salaryValue.getValue() != "50000.50") {
+                throw new Exception("Salary should be number type with value 50000.50")
+            }
+            
+            // Test number conversions
+            var ageAsInt = ageValue.asInteger()
+            if (ageAsInt != 28) {
+                throw new Exception("Age conversion failed")
+            }
+            
+            "Nested object with numbers test passed".println()
+        }
+
+        test testParseZeroAndNegativeNumbers() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            
+            // Create JSON with zero and negative: {"zero":0,"negative":-15,"negativeFloat":-3.14}
+            var json = "{" + quote + "zero" + quote + ":0," + 
+                      quote + "negative" + quote + ":-15," + 
+                      quote + "negativeFloat" + quote + ":-3.14}"
+            "Testing JSON with zero and negative numbers: ${json}".println()
+            
+            var textParser = new TextParser(json)
+            var jsonParser = new JsonParser(textParser)
+            var jsonObject = jsonParser.parseObject()
+            
+            var zeroValue = jsonObject.getValue("zero")
+            var negativeValue = jsonObject.getValue("negative")
+            var negativeFloatValue = jsonObject.getValue("negativeFloat")
+            
+            "Zero value: ${zeroValue.getValue()}".println()
+            "Negative value: ${negativeValue.getValue()}".println()
+            "Negative float value: ${negativeFloatValue.getValue()}".println()
+            
+            // All should be numbers now
+            if (!zeroValue.isNumber() || zeroValue.getValue() != "0") {
+                throw new Exception("Zero value should be number type with value 0")
+            }
+            
+            if (!negativeValue.isNumber() || negativeValue.getValue() != "-15") {
+                throw new Exception("Negative value should be number type with value -15")
+            }
+            
+            if (!negativeFloatValue.isNumber() || negativeFloatValue.getValue() != "-3.14") {
+                throw new Exception("Negative float should be number type with value -3.14")
+            }
+            
+            // Test number conversions
+            var zeroAsInt = zeroValue.asInteger()
+            var negativeAsInt = negativeValue.asInteger()
+            if (zeroAsInt != 0 || negativeAsInt != -15) {
+                throw new Exception("Number conversions failed")
+            }
+            
+            "Zero and negative numbers test passed".println()
+        }
+    }
+}

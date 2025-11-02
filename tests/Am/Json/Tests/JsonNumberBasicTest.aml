@@ -1,0 +1,57 @@
+namespace Am.Json.Tests {
+
+    class JsonNumberBasicTest {
+        import Am.Lang
+        import Am.Json
+
+        test testBasicNumberFlexibility() {
+            var jsonArray = new JsonArray()
+            
+            // Test with basic signed types only
+            jsonArray.addInt(42)
+            jsonArray.addLong(42L)
+            jsonArray.addByte(42B)
+            jsonArray.addShort(42S)
+            
+            "Array with 4 basic numeric types:".println()
+            jsonArray.toString().println()
+            
+            // Extract values back
+            var intVal = jsonArray.getInt(0)
+            var longVal = jsonArray.getLong(1) 
+            var byteVal = jsonArray.getByte(2)
+            var shortVal = jsonArray.getShort(3)
+            
+            "Retrieved values: ${intVal}, ${longVal}, ${byteVal}, ${shortVal}".println()
+            
+            if (intVal != 42 || longVal != 42L || byteVal != 42B || shortVal != 42S) {
+                throw new Exception("Basic number retrieval failed")
+            }
+            
+            "Basic number test passed!".println()
+        }
+
+        test testBasicObjectNumbers() {
+            var jsonObject = new JsonObject()
+            
+            // Test JsonObject with basic signed types
+            jsonObject.putInt("int_val", 100)
+            jsonObject.putLong("long_val", 200L)
+            jsonObject.putByte("byte_val", 50B)
+            jsonObject.putShort("short_val", 300S)
+            
+            var intVal = jsonObject.getInt("int_val")
+            var longVal = jsonObject.getLong("long_val")
+            var byteVal = jsonObject.getByte("byte_val")
+            var shortVal = jsonObject.getShort("short_val")
+            
+            "Object values: ${intVal}, ${longVal}, ${byteVal}, ${shortVal}".println()
+            
+            if (intVal != 100 || longVal != 200L || byteVal != 50B || shortVal != 300S) {
+                throw new Exception("Basic object number retrieval failed")
+            }
+            
+            "Basic object number test passed!".println()
+        }
+    }
+}
