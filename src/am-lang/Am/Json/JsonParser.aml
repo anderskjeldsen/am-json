@@ -21,9 +21,10 @@ namespace Am.Json {
         public fun parseObject(): JsonObject {
             // '{' ascii value is: 123
             // '[' ascii value is: 91
+            "parse object".println()
             this.skipWhitespace()
             var c = this.parser.peekChar()
-            if (c == JsonParser.leftBrace ) { // '{'
+            if (c == JsonParser.leftBrace ) { // '{'            
                 return this.parseJsonObject()
             } else {
                 throw new Exception("Expected '{' to start JSON object")
@@ -42,11 +43,13 @@ namespace Am.Json {
 
         private fun parseString(): String {
             // check if it starts with a double quote
+            "parse string".println()
             var c = this.parser.peekChar()
             if (c != 34US) {
                 throw new Exception("Invalid string constant")
             }
             this.parser.skip(1UI) // skip opening quote
+            "quote skipped".println()
             
             var sb: StringBuilder = new StringBuilder()
             var go = true
@@ -55,10 +58,14 @@ namespace Am.Json {
                 var str = this.parser.parseUntil((cs) => return (cs == 34US) || cs == 92US)
                 sb.add(str)
                 
+                "sb at this point: ${sb.toString()}".println()
+
                 if (!this.parser.hasMore()) {
                     throw new Exception("Unterminated string - reached end of input")
                 }
+
                 var c1 = this.parser.peekChar()
+                "peeked char: ${c1}".println()
                 if (c1 == 0US) {
                     throw new Exception("Unterminated string - reached end of input")
                 } else if (c1 == JsonParser.backslash) { // Handle escape sequences
@@ -147,6 +154,7 @@ namespace Am.Json {
         }
 
         private fun parseJsonObject(): JsonObject {
+            "parseJsonObject...".println()
             var jsonObject = new JsonObject()
             this.parser.skip(1UI) // skip '{'
             this.skipWhitespace()
@@ -159,7 +167,9 @@ namespace Am.Json {
             }
             
             while (true) {
-                var key = this.parseString()
+                "parse key".println()
+                var key = this.parseString()                
+                "key parsed: ${key}".println()
                 this.skipWhitespace()
                 
                 // Expect ':'
@@ -170,7 +180,10 @@ namespace Am.Json {
                 this.parser.skip(1UI)
                 this.skipWhitespace()
                 
+                "parse value for key ${key}".println()
                 var value = this.parseValue()
+                "value parsed for key ${key}: $value".println()
+
                 jsonObject.putValue(key, value)
                 this.skipWhitespace()
                 

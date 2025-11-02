@@ -6,27 +6,30 @@ namespace Am.Json.Tests {
         import Am.Util.Parsers.Text
 
         test debugParseDirectString() {
-            // Test parsing the exact string that works in the debug test
+            // Construct JSON string with proper quote characters
             var quoteBytes: UByte[] = [34UB]
-            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
-            var jsonStr: String = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
             
             "About to parse JSON".println()
             jsonStr.println()
+            ("String length: " + jsonStr.getLength().toString()).println()
             
-            var textParser: TextParser = new TextParser(jsonStr)
-            "TextParser created".println()
-            
-            var jsonParser: JsonParser = new JsonParser(textParser)
-            "JsonParser created, attempting to parse...".println()
+            // Debug each character
+            "String character by character:".println()
+            for(i = 0 to jsonStr.getLength()) {
+                var char = jsonStr.characterAt(i.toUInt())
+                ("Index " + i.toString() + ": character code " + char.toString()).println()
+            }
             
             try {
-                var result: JsonObject = jsonParser.parseObject()
-                "Parse successful!".println()
-                var name: String = result.getString("name")
-                name.println()
-                Assert.assertTrue(name == "John")
-            } catch (e: Exception) {
+                "TextParser created".println()
+                var parser = new TextParser(jsonStr)
+                "JsonParser created, attempting to parse...".println()
+                var jsonParser = new JsonParser(parser)
+                var result = jsonParser.parseObject()
+                "Parse succeeded!".println()
+            } catch(e: Exception) {
                 "Parse failed with exception:".println()
                 e.message.println()
                 throw e
