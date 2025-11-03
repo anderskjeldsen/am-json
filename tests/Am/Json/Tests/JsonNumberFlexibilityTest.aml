@@ -15,7 +15,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var value = jsonObject.getValue("value")
             

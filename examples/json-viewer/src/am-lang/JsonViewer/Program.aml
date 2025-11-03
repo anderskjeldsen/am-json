@@ -1,0 +1,119 @@
+namespace JsonViewer {
+    class Program {
+        import Am.Lang
+        import Am.IO
+        import Am.Util.Parsers.Text
+        import Am.Json
+
+        static fun main() {
+            "=== AmLang JSON Viewer Example ===".println()
+            "".println()
+            
+            var file = new File("company-data.json")
+            if (!file.exists()) {
+                "Error: company-data.json file not found!".println()
+                "Please make sure the file is in the same directory as the executable.".println()
+                return
+            }
+            
+            "Loading JSON file: company-data.json".println()
+            var filePath = file.toString()
+            var jsonContent = String.readFromFile(filePath) // file.toString()
+            "File size: ${jsonContent.length()} characters".println()
+            "".println()
+            
+            var textParser = new TextParser(jsonContent)
+            var parser = new JsonParser(textParser)
+            var json = parser.parse()
+            
+            "Parsing completed successfully!".println()
+            "JSON Type: ${json.getType()}".println()
+            "".println()
+            
+            displayJson(json, 0)
+                
+        }
+        
+        static fun displayJson(json: JsonValue, indentLevel: Int) {
+            var indent = Program.getIndent(indentLevel)
+            
+            switch (json.getType()) {
+                case JsonValueType.objectType:
+                    "${indent}Object {".println()
+                    var obj = json.asObject()
+                    var keys = obj.keys()
+                    each (keys, key) {
+                        var value = obj.getValue(key)
+                        "${Program.getIndent(indentLevel + 1)}\"${key}\": ".print()
+                        
+                        if (value.getType() == JsonValueType.objectType || value.getType() == JsonValueType.arrayType) {
+                            "".println()
+                            Program.displayJson(value, indentLevel + 1)
+                        } else {
+                            Program.displaySimpleValue(value)
+                            "".println()
+                        }
+                    }
+                    "${indent}}".println()
+                    
+                case JsonValueType.arrayType:
+                    "${indent}Array [".println()
+                    var arr = json.asArray()
+                    for (i = 0 to arr.size()) {
+                        var item = arr.getValue(i)
+                        "${Program.getIndent(indentLevel + 1)}[${i}]: ".print()
+                        
+                        if (item.getType() == JsonValueType.objectType || item.getType() == JsonValueType.arrayType) {
+                            "".println()
+                            Program.displayJson(item, indentLevel + 1)
+                        } else {
+                            Program.displaySimpleValue(item)
+                            "".println()
+                        }
+                    }
+                    "${indent}]".println()
+                    
+                default:
+                    "${indent}".print()
+                    Program.displaySimpleValue(json)
+                    "".println()
+            }
+        }
+        
+        static fun displaySimpleValue(json: JsonValue) {
+            switch (json.getType()) {
+                case JsonValueType.stringType:
+                    "\"${json.asString()}\"".print()
+                    
+                case JsonValueType.numberType:
+                    "${json.asString()}".print()
+                    
+                case JsonValueType.boolType:
+                    if (json.asBool()) {
+                        "true".print()
+                    } else {
+                        "false".print()
+                    }
+                    
+                case JsonValueType.nullType:
+                    "null".print()
+                    
+                default:
+                    "${json}".print()
+            }
+        }
+        
+        static fun getIndent(level: Int): String {
+            var result = ""
+            for (i = 0 to level) {
+                result = result + "  "
+            }
+            return result
+        }
+        
+        static fun print(text: String) {
+            // Helper method for printing without newline
+            text.print()
+        }
+    }
+}

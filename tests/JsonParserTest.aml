@@ -12,7 +12,8 @@ namespace Am.Json.Tests {
             var jsonStr: String = "{" + quote + "name" + quote + ":" + quote + "John" + quote + "}"
             var textParser: TextParser = new TextParser(jsonStr)
             var jsonParser: JsonParser = new JsonParser(textParser)
-            var result: JsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asObject()
             var name: String = result.getString("name")
             Assert.assertTrue(name == "John")
         }
@@ -24,7 +25,9 @@ namespace Am.Json.Tests {
             var jsonStr: String = "[" + quote + "apple" + quote + "," + quote + "banana" + quote + "," + quote + "cherry" + quote + "," + quote + "date" + quote + "]"
             var textParser: TextParser = new TextParser(jsonStr)
             var jsonParser: JsonParser = new JsonParser(textParser)
-            var result: JsonArray = jsonParser.parseArray()
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asArray()
+
             var item0: String = result.getString(0)
             var item1: String = result.getString(1)
             var item2: String = result.getString(2)
@@ -42,7 +45,9 @@ namespace Am.Json.Tests {
             var jsonStr: String = "{" + quote + "users" + quote + ":[" + quote + "Alice" + quote + "," + quote + "Bob" + quote + "]," + quote + "count" + quote + ":" + quote + "2" + quote + "}"
             var textParser: TextParser = new TextParser(jsonStr)
             var jsonParser: JsonParser = new JsonParser(textParser)
-            var result: JsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asObject()
+
             var users: JsonArray = result.getJsonArray("users")
             var usersSize: Int = users.size()
             Assert.assertTrue(usersSize == 2)

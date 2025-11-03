@@ -1,0 +1,69 @@
+namespace Am.Json.Tests {
+    class JsonEdgeCaseEmptyTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+        import Am.Util.Parsers.Text
+
+        test parseEmptyObject() {
+            "Testing empty JSON object parsing".println()
+            var jsonStr = "{}"
+            var textParser = new TextParser(jsonStr)
+            var jsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asObject()
+            
+            // Verify it's an object and it's empty
+            Assert.assertTrue(jsonRoot.isObject())
+            "Empty object parsed successfully".println()
+        }
+
+        test parseEmptyArray() {
+            "Testing empty JSON array parsing".println()
+            var jsonStr = "[]"
+            var textParser = new TextParser(jsonStr)
+            var jsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asArray()
+            
+            // Verify it's an array and it's empty
+            Assert.assertTrue(jsonRoot.isArray())
+            Assert.assertTrue(result.size() == 0)
+            "Empty array parsed successfully".println()
+        }
+
+        test parseEmptyString() {
+            "Testing empty string value parsing".println()
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr = "{" + quote + "empty" + quote + ":" + quote + quote + "}"
+            
+            var textParser = new TextParser(jsonStr)
+            var jsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asObject()
+            
+            var emptyValue = result.getString("empty")
+            Assert.assertTrue(emptyValue.getLength() == 0)
+            "Empty string value parsed successfully: length is ${emptyValue.getLength()}".println()
+        }
+
+        test parseObjectWithEmptyArrayAndEmptyObject() {
+            "Testing nested empty containers".println()
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr = "{" + quote + "emptyArray" + quote + ":[]," + quote + "emptyObject" + quote + ":{}}"
+            
+            var textParser = new TextParser(jsonStr)
+            var jsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var result = jsonRoot.asObject()
+            
+            var emptyArray = result.getJsonArray("emptyArray")
+            var emptyObject = result.getJsonObject("emptyObject")
+            
+            Assert.assertTrue(emptyArray.size() == 0)
+            "Nested empty containers parsed successfully".println()
+        }
+    }
+}

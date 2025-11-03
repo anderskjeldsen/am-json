@@ -18,7 +18,12 @@ namespace Am.Json {
             this.parser.skipUntil((c) => return (c != 32US) && (c != 9US) && (c != 10US) && (c != 13US))
         }
 
-        public fun parseObject(): JsonObject {
+        fun parse(): JsonValue {
+            return this.parseValue()
+        }
+
+
+        private fun parseObject(): JsonObject {
             // '{' ascii value is: 123
             // '[' ascii value is: 91
             "parse object".println()
@@ -31,7 +36,7 @@ namespace Am.Json {
             }
         }
 
-        public fun parseArray(): JsonArray {
+        private fun parseArray(): JsonArray {
             this.skipWhitespace()
             var c = this.parser.peekChar()
             if (c == JsonParser.leftBracket) { // '['

@@ -15,7 +15,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var ageValue = jsonObject.getValue("age")
             var ageValueStr = ageValue.getValue()
@@ -52,7 +53,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var priceValue = jsonObject.getValue("price")
             "Price value: ${priceValue.getValue()}".println()
@@ -89,7 +91,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             // Test string value
             var nameValue = jsonObject.getValue("name")
@@ -131,7 +134,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var scoresValue = jsonObject.getValue("scores")
             "Scores value type: ${scoresValue.getType()}".println()
@@ -191,7 +195,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var personValue = jsonObject.getValue("person")
             if (!personValue.isObject()) {
@@ -246,7 +251,8 @@ namespace Am.Json.Tests {
             
             var textParser = new TextParser(json)
             var jsonParser = new JsonParser(textParser)
-            var jsonObject = jsonParser.parseObject()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
             
             var zeroValue = jsonObject.getValue("zero")
             var negativeValue = jsonObject.getValue("negative")

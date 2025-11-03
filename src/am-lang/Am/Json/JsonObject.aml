@@ -170,6 +170,23 @@ namespace Am.Json {
             throw new Exception("Key '" + key + "' not found")
         }
 
+        // Get nested objects and arrays
+        public fun getObject(key: String): JsonObject {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asObject()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
+        public fun getArray(key: String): JsonArray {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asArray()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
         // Type checking methods
         public fun isString(key: String): Bool {
             var jsonValue = this.properties.get(key)
@@ -225,13 +242,12 @@ namespace Am.Json {
             return this.properties.containsKey(key)
         }
 
-        public fun remove(key: String): JsonValue {
+        public fun remove(key: String): Bool {
             return this.properties.remove(key)
         }
 
-        public fun keys(): Array<String> {
-            // HashMap doesn't have a keys() method, so we'll return empty array for now
-            return new String[0]
+        public fun keys(): List<String> {
+            return this.properties.buildKeys()
         }
 
         public fun size(): Int {

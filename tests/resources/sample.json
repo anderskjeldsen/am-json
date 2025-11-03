@@ -1,0 +1,23 @@
+{
+    "name": "AmLang JSON Library",
+    "version": "1.0.0",
+    "isActive": true,
+    "metadata": {
+        "license": "MIT",
+        "repository": null,
+        "tags": ["json", "amlang", "library"]
+    },
+    "numbers": {
+        "integer": 42,
+        "long": 9876543210,
+        "byte": 127,
+        "short": 32767,
+        "unsigned_int": 4294967295,
+        "unsigned_long": 18446744073709551615
+    },
+    "features": [
+        "Unified number system",
+        "Strong type safety",
+        "Cross-platform compatibility"
+    ]
+}

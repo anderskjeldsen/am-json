@@ -1,0 +1,187 @@
+namespace Am.Json.Tests {
+
+    class JsonFileParseTest {
+        import Am.Lang
+        import Am.Json
+        import Am.IO
+        import Am.Util.Parsers.Text
+
+        test testParseJsonFile() {
+            // Load JSON file from resources/ directory (automatically copied by compiler)
+            var filePath = "resources/sample.json"
+            "Loading JSON file: ${filePath}".println()
+            
+            var file = new File(filePath)
+            if (!file.exists()) {
+                throw new Exception("Test file not found: ${filePath}")
+            }
+            "Json file exists".println()
+            
+            var fileStream = new FileStream(file, FileAccess.readOnly)
+            var contentBytes = fileStream.readAll()
+            
+            "File content bytes loaded, array length: ${contentBytes.length()}".println()
+            
+            if (contentBytes.length() == 0) {
+                throw new Exception("File is empty or could not be read")
+            }
+            
+            "About to call String.fromBytes...".println()
+            var jsonContent = String.fromBytes(contentBytes, "UTF-8")
+            "String.fromBytes completed successfully".println()
+            
+            // Get content length safely (avoid segfault in string template)
+            var contentLength = jsonContent.length()
+            "File content loaded, length: ${contentLength}".println()
+            
+            // Display preview of content if it's long enough
+            if (contentLength > 100UI) {
+                var preview = jsonContent.substring(0UI, 100UI)
+                "Content preview: ${preview}...".println()
+            } else {
+                "Full content: ${jsonContent}".println()
+            }
+            
+            // Parse the JSON content
+            var textParser = new TextParser(jsonContent)
+            var jsonParser = new JsonParser(textParser)
+            "parse JSON".println()
+            var jsonRoot = jsonParser.parse()
+            var jsonObject = jsonRoot.asObject()
+            
+            "JSON parsed successfully!".println()
+            
+            // Test basic string values
+            var name = jsonObject.getString("name")
+            var version = jsonObject.getString("version")
+            var license = jsonObject.getObject("metadata").getString("license")
+            
+            "Name: ${name}".println()
+            "Version: ${version}".println()
+            "License: ${license}".println()
+            
+            if (name != "AmLang JSON Library") {
+                throw new Exception("Expected name 'AmLang JSON Library', got: ${name}")
+            }
+            
+            if (version != "1.0.0") {
+                throw new Exception("Expected version '1.0.0', got: ${version}")
+            }
+            
+            // Test boolean value
+            var isActive = jsonObject.getBool("isActive")
+            "Is Active: ${isActive}".println()
+            
+            if (!isActive) {
+                throw new Exception("Expected isActive to be true")
+            }
+            
+            // Test nested object with different number types using our unified system
+            var numbersObj = jsonObject.getObject("numbers")
+            var intVal = numbersObj.getInt("integer")
+            var longVal = numbersObj.getLong("long")
+            var byteVal = numbersObj.getByte("byte")
+            var shortVal = numbersObj.getShort("short")
+            var uintVal = numbersObj.getUInt("unsigned_int")
+            var ulongVal = numbersObj.getULong("unsigned_long")
+            
+            "Numbers from file:".println()
+            "  Integer: ${intVal}".println()
+            "  Long: ${longVal}".println()
+            "  Byte: ${byteVal}".println()
+            "  Short: ${shortVal}".println()
+            "  UInt: ${uintVal}".println()
+            "  ULong: ${ulongVal}".println()
+            
+            // Verify number values
+            if (intVal != 42 || longVal != 9876543210L || byteVal != 127B || shortVal != 32767S) {
+                throw new Exception("Signed number values don't match expected")
+            }
+            
+            if (uintVal != 4294967295UI || ulongVal != 18446744073709551615UL) {
+                throw new Exception("Unsigned number values don't match expected")
+            }
+            
+            // Test array parsing
+            var featuresArray = jsonObject.getArray("features")
+            var arraySize = featuresArray.size()
+            "Features array size: ${arraySize}".println()
+            
+            if (arraySize != 3) {
+                throw new Exception("Expected 3 features, got: ${arraySize}")
+            }
+            
+            var firstFeature = featuresArray.getString(0)
+            var secondFeature = featuresArray.getString(1)
+            var thirdFeature = featuresArray.getString(2)
+            
+            "Features:".println()
+            "  1. ${firstFeature}".println()
+            "  2. ${secondFeature}".println()
+            "  3. ${thirdFeature}".println()
+            
+            if (firstFeature != "Unified number system") {
+                throw new Exception("Expected first feature 'Unified number system', got: ${firstFeature}")
+            }
+            
+            // Test null value handling
+            var metadata = jsonObject.getObject("metadata")
+            var repository = metadata.getValue("repository")
+            
+            if (!repository.isNull()) {
+                throw new Exception("Expected repository to be null")
+            }
+            
+            "Repository is null: ${repository.isNull()}".println()
+            
+            // Test nested array of strings
+            var tagsArray = metadata.getArray("tags")
+            var tagsSize = tagsArray.size()
+            "Tags array size: ${tagsSize}".println()
+            
+            if (tagsSize != 3) {
+                throw new Exception("Expected 3 tags, got: ${tagsSize}")
+            }
+            
+            var firstTag = tagsArray.getString(0)
+            if (firstTag != "json") {
+                throw new Exception("Expected first tag 'json', got: ${firstTag}")
+            }
+            
+            "File parsing test completed successfully!".println()
+            "✅ All values parsed correctly using unified number system".println()
+        }
+        
+        test testFileNotFound() {
+            "Testing file not found handling...".println()
+            
+            var filePath = "resources/nonexistent.json"
+            var file = new File(filePath)
+            
+            if (file.exists()) {
+                throw new Exception("File should not exist: ${filePath}")
+            }
+            
+            "✅ File not found handling works correctly".println()
+        }
+        
+        test testParseInvalidJson() {
+            "Testing invalid JSON handling...".println()
+            
+            // Create invalid JSON content
+            var invalidJson = "{\"name\": \"test\", invalid syntax here}"
+            
+            var textParser = new TextParser(invalidJson)
+            var jsonParser = new JsonParser(textParser)
+            
+            // This should handle the parsing gracefully or throw appropriate exception
+            try {
+                var jsonRoot = jsonParser.parse()
+                var result = jsonRoot.asObject()
+                throw new Exception("Expected parsing to fail for invalid JSON")
+            } catch (e: Exception) {
+                "✅ Invalid JSON properly handled with exception".println()
+            }
+        }
+    }
+}

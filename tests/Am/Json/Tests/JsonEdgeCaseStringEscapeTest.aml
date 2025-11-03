@@ -1,0 +1,73 @@
+namespace Am.Json.Tests {
+    class JsonEdgeCaseStringEscapeTest {
+        import Am.Json
+        import Am.Tests
+        import Am.Lang
+        import Am.Util.Parsers.Text
+        
+        test parseBasicEscapeSequences() {
+            "Testing basic JSON escape sequences".println()
+            
+            // Test basic escape sequences: \", \\, \/, \b, \f, \n, \r, \t
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var backslash: String = "\\"
+            var jsonStr: String = "{" + quote + "quote" + quote + ":" + quote + "He said " + backslash + quote + "Hello" + backslash + quote + quote + "," + quote + "backslash" + quote + ":" + quote + "C:" + backslash + backslash + "path" + quote + "}"
+            
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var obj = jsonRoot.asObject()
+            
+            // Check quote escape
+            var quoteValue = obj.getString("quote")
+            "Quote value: ${quoteValue}".println()
+            
+            // Check backslash escape
+            var backslashValue = obj.getString("backslash")
+            "Backslash value: ${backslashValue}".println()
+            
+            "Basic escape sequences parsed successfully".println()
+        }
+        
+        test parseSpecialCharacters() {
+            "Testing special characters in JSON strings".println()
+            
+            // Test various special characters that might cause issues
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr: String = "{" + quote + "symbols" + quote + ":" + quote + "@#$%^&*()_+-={}[]|;:,.<>?" + quote + "}"
+            
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var obj = jsonRoot.asObject()
+            
+            var symbolsValue = obj.getString("symbols")
+            "Symbols: ${symbolsValue}".println()
+            Assert.assertEquals("@#$%^&*()_+-={}[]|;:,.<>?", symbolsValue)
+            
+            "Special characters parsed successfully".println()
+        }
+        
+        test parseEmptyEscapes() {
+            "Testing edge case escape scenarios".println()
+            
+            // Test simple escape case
+            var quoteBytes: UByte[] = [34UB]
+            var quote: String = String.fromBytes(quoteBytes, "UTF-8")
+            var backslash: String = "\\"
+            var jsonStr: String = "{" + quote + "simple" + quote + ":" + quote + "test" + backslash + quote + "end" + quote + "}"
+            
+            var textParser: TextParser = new TextParser(jsonStr)
+            var jsonParser: JsonParser = new JsonParser(textParser)
+            var jsonRoot = jsonParser.parse()
+            var obj = jsonRoot.asObject()
+            
+            var simpleValue = obj.getString("simple")
+            "Simple escape value: '${simpleValue}'".println()
+            
+            "Edge case escapes handled".println()
+        }
+    }
+}

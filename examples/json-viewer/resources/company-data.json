@@ -1,0 +1,80 @@
+{
+  "company": {
+    "name": "Tech Innovations Inc",
+    "founded": 2010,
+    "employees": 150,
+    "headquarters": {
+      "address": "123 Innovation Drive",
+      "city": "Silicon Valley",
+      "state": "CA",
+      "zipCode": "94041",
+      "coordinates": {
+        "latitude": 37.4419,
+        "longitude": -122.1430
+      }
+    },
+    "departments": [
+      {
+        "name": "Engineering",
+        "headCount": 85,
+        "budget": 5000000,
+        "isActive": true,
+        "projects": [
+          {
+            "name": "AmLang Compiler",
+            "status": "active",
+            "priority": "high",
+            "team": ["Alice", "Bob", "Charlie"],
+            "deadline": "2025-12-31"
+          },
+          {
+            "name": "JSON Parser",
+            "status": "completed",
+            "priority": "medium",
+            "team": ["David", "Eve"],
+            "deadline": "2025-06-30"
+          }
+        ]
+      },
+      {
+        "name": "Marketing",
+        "headCount": 25,
+        "budget": 1500000,
+        "isActive": true,
+        "projects": [
+          {
+            "name": "Product Launch Campaign",
+            "status": "planning",
+            "priority": "high",
+            "team": ["Frank", "Grace", "Henry"],
+            "deadline": "2025-09-15"
+          }
+        ]
+      },
+      {
+        "name": "Research",
+        "headCount": 40,
+        "budget": 3000000,
+        "isActive": false,
+        "projects": []
+      }
+    ],
+    "technologies": ["C", "AmLang", "JSON", "Docker", "Linux"],
+    "metrics": {
+      "revenue": 25000000,
+      "profit": 5000000,
+      "growth": 15.5,
+      "satisfaction": 4.2
+    },
+    "contact": {
+      "email": "info@techinnovations.com",
+      "phone": "+1-555-123-4567",
+      "website": "https://www.techinnovations.com",
+      "socialMedia": {
+        "twitter": "@TechInnovInc",
+        "linkedin": "tech-innovations-inc",
+        "github": "techinnovations"
+      }
+    }
+  }
+}

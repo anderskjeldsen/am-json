@@ -27,7 +27,8 @@ namespace Am.Json.Tests {
                 var parser = new TextParser(jsonStr)
                 "JsonParser created, attempting to parse...".println()
                 var jsonParser = new JsonParser(parser)
-                var result = jsonParser.parseObject()
+                var jsonRoot = jsonParser.parse()
+                var result = jsonRoot.asObject()
                 "Parse succeeded!".println()
             } catch(e: Exception) {
                 "Parse failed with exception:".println()
