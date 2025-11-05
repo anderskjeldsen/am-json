@@ -7,6 +7,7 @@ dependencies:
     type: git-repo
     tag: latest
     url: https://github.com/anderskjeldsen/am-lang-core.git
+    features: ["floatingPoint"]
   - id: am-tests
     testOnly: true
     realm: github
