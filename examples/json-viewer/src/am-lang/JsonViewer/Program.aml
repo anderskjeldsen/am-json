@@ -27,7 +27,7 @@ namespace JsonViewer {
             var json = parser.parse()
             
             "Parsing completed successfully!".println()
-            "JSON Type: ${json.getType()}".println()
+//            "JSON Type: ${json.getType()}".println()
             "".println()
             
             displayJson(json, 0)
@@ -86,7 +86,7 @@ namespace JsonViewer {
                     "\"${json.asString()}\"".print()
                     
                 case JsonValueType.numberType:
-                    "${json.asString()}".print()
+                    "${json.asDouble()}".print()
                     
                 case JsonValueType.boolType:
                     if (json.asBool()) {

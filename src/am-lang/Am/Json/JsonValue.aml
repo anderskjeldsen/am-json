@@ -28,14 +28,6 @@ namespace Am.Json {
             return this.type == JsonValueType.numberType
         }
 
-        public fun isInteger(): Bool {
-            return this.type == JsonValueType.numberType
-        }
-
-        public fun isLong(): Bool {
-            return this.type == JsonValueType.numberType
-        }
-
         public fun isBool(): Bool {
             return this.type == JsonValueType.boolType
         }
@@ -50,10 +42,6 @@ namespace Am.Json {
 
         public fun isArray(): Bool {
             return this.type == JsonValueType.arrayType
-        }
-
-        public fun isDouble(): Bool {
-            return this.type == JsonValueType.numberType
         }
 
         public fun asString(): String {
@@ -136,9 +124,6 @@ namespace Am.Json {
             }
         }
 
-        // Note: AmLang doesn't have built-in Double/Float parsing yet
-        // These methods will need to be implemented when floating point support is added
-        /*
         public fun asDouble(): Double {
             if (this.type == JsonValueType.numberType) {
                 var stringValue = this.value as String
@@ -156,7 +141,6 @@ namespace Am.Json {
                 throw new Exception("JsonValue is not a number")
             }
         }
-        */
 
         public fun asBool(): Bool {
             if (this.type == JsonValueType.boolType) {
@@ -219,6 +203,14 @@ namespace Am.Json {
         }
 
         static fun fromUShort(value: UShort): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromDouble(value: Double): JsonValue {
+            return new JsonValue(value.toString(), JsonValueType.numberType)
+        }
+
+        static fun fromFloat(value: Float): JsonValue {
             return new JsonValue(value.toString(), JsonValueType.numberType)
         }
 

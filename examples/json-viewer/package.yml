@@ -3,11 +3,16 @@ version: "1.0.0"
 type: "application"
 dependencies:
   - id: am-lang-core
-    type: local
-    path: /home/anders/Projects/AmLang/am-lang-core
+    realm: github
+    type: git-repo
+    tag: latest
+    url: https://github.com/anderskjeldsen/am-lang-core.git
+    features: ["floatingPoint"]
+#    type: local
+#    path: /home/anders/Projects/AmLang/am-lang-core
   - id: am-json
     type: local
-    path: /home/anders/Projects/AmLang/am-json
+    path: ../..
 platforms:
   - id: libc
     abstract: true

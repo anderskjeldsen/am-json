@@ -8,6 +8,8 @@ dependencies:
     tag: latest
     url: https://github.com/anderskjeldsen/am-lang-core.git
     features: ["floatingPoint"]
+#    type: local
+#    path: ../am-lang-core
   - id: am-tests
     testOnly: true
     realm: github
