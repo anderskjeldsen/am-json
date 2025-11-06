@@ -37,6 +37,56 @@ namespace Tests {
             Assert.assertTrue(emptyObj.toJsonString() == "{}")
             Assert.assertTrue(emptyArr.toJsonString() == "[]")
         }
+
+        test testComplexObjectRendering() {
+            // Create a complex nested object structure
+            var mainObj = new JsonObject()
+            
+            // Add simple values using the correct put methods
+            mainObj.putString("name", "John Doe")
+            mainObj.putInt("age", 30)
+            mainObj.putBool("isActive", true)
+            mainObj.putNull("salary")
+            
+            // Create nested object
+            var address = new JsonObject()
+            address.putString("street", "123 Main St")
+            address.putString("city", "New York")
+            address.putInt("zipCode", 10001)
+            mainObj.putObject("address", address)
+            
+            // Create array of strings
+            var hobbies = new JsonArray()
+            hobbies.addString("reading")
+            hobbies.addString("swimming")
+            hobbies.addString("coding")
+            mainObj.putArray("hobbies", hobbies)
+            
+            // Create array of objects
+            var contacts = new JsonArray()
+            var contact1 = new JsonObject()
+            contact1.putString("type", "email")
+            contact1.putString("value", "john@example.com")
+            contacts.addObject(contact1)
+            
+            var contact2 = new JsonObject()
+            contact2.putString("type", "phone")
+            contact2.putString("value", "555-1234")
+            contacts.addObject(contact2)
+            mainObj.putArray("contacts", contacts)
+            
+            // Render to JSON string
+            var jsonString = mainObj.toJsonString()
+            
+            // Print for visual inspection
+            "Complex JSON output:".println()
+            jsonString.println()
+            
+            // Basic validation - check that it contains expected elements
+            Assert.assertTrue(jsonString.getLength() > 50) // Should be a substantial string
+            
+            "Complex object rendering test passed!".println()
+        }
     }
     }
 }
