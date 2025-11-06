@@ -47,7 +47,7 @@ namespace Am.Json.Tests {
             // Test type checking methods
             var stringValue = JsonValue.fromString("hello")
             Assert.assertTrue(stringValue.isString())
-            Assert.assertFalse(stringValue.isInteger())
+            Assert.assertFalse(stringValue.isNumber())
             Assert.assertFalse(stringValue.isBool())
             Assert.assertFalse(stringValue.isNull())
             Assert.assertFalse(stringValue.isObject())
@@ -57,7 +57,7 @@ namespace Am.Json.Tests {
             var nullValue = JsonValue.fromNull()
             Assert.assertTrue(nullValue.isNull())
             Assert.assertFalse(nullValue.isString())
-            Assert.assertFalse(nullValue.isInteger())
+            Assert.assertFalse(nullValue.isNumber())
             Assert.assertFalse(nullValue.isBool())
             Assert.assertFalse(nullValue.isObject())
             Assert.assertFalse(nullValue.isArray())
