@@ -220,5 +220,26 @@ namespace Am.Json {
         public fun contains(value: JsonValue): Bool {
             return this.elements.contains(value)
         }
+
+        public fun toJsonString(): String {
+            var result = "["
+            var first = true
+            
+            var i = 0
+            while (i < this.elements.getSize()) {
+                var value = this.elements.get(i)
+                
+                if (!first) {
+                    result = result + ","
+                }
+                
+                result = result + value.toJsonString()
+                first = false
+                i = i + 1
+            }
+            
+            result = result + "]"
+            return result
+        }
     }
 }

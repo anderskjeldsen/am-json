@@ -1,0 +1,42 @@
+namespace Tests {
+
+    class JsonRenderTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+
+        test testSimpleStringRendering() {
+            var value: JsonValue = JsonValue.fromString("hello")
+            var json: String = value.toJsonString()
+            Assert.assertTrue(json == "\"hello\"")
+        }
+
+        test testNumberRendering() {
+            var value: JsonValue = JsonValue.fromInteger(42)
+            var json: String = value.toJsonString()
+            Assert.assertTrue(json == "42")
+        }
+
+        test testBoolRendering() {
+            var trueValue: JsonValue = JsonValue.fromBool(true)
+            var falseValue: JsonValue = JsonValue.fromBool(false)
+            Assert.assertTrue(trueValue.toJsonString() == "true")
+            Assert.assertTrue(falseValue.toJsonString() == "false")
+        }
+
+        test testNullRendering() {
+            var value: JsonValue = JsonValue.fromNull()
+            var json: String = value.toJsonString()
+            Assert.assertTrue(json == "null")
+        }
+
+        test testEmptyObjectAndArray() {
+            var emptyObj: JsonObject = new JsonObject()
+            var emptyArr: JsonArray = new JsonArray()
+            
+            Assert.assertTrue(emptyObj.toJsonString() == "{}")
+            Assert.assertTrue(emptyArr.toJsonString() == "[]")
+        }
+    }
+    }
+}

@@ -257,5 +257,28 @@ namespace Am.Json {
         public fun isEmpty(): Bool {
             return this.properties.isEmpty()
         }
+
+        public fun toJsonString(): String {
+            var result = "{"
+            var keys = this.keys()
+            var first = true
+            
+            var i = 0
+            while (i < keys.getSize()) {
+                var key = keys.get(i)
+                var value = this.getValue(key)
+                
+                if (!first) {
+                    result = result + ","
+                }
+                
+                result = result + "\"" + key + "\":" + value.toJsonString()
+                first = false
+                i = i + 1
+            }
+            
+            result = result + "}"
+            return result
+        }
     }
 }

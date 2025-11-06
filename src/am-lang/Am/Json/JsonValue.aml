@@ -239,6 +239,28 @@ namespace Am.Json {
             return new JsonValue(nullValue, JsonValueType.nullType)
         }
 
+        public fun toJsonString(): String {
+            if (this.type == JsonValueType.stringType) {
+                return "\"" + this.asString() + "\""
+            } else if (this.type == JsonValueType.numberType) {
+                return this.value as String
+            } else if (this.type == JsonValueType.boolType) {
+                if (this.asBool()) {
+                    return "true"
+                } else {
+                    return "false"
+                }
+            } else if (this.type == JsonValueType.nullType) {
+                return "null"
+            } else if (this.type == JsonValueType.objectType) {
+                return this.asObject().toJsonString()
+            } else if (this.type == JsonValueType.arrayType) {
+                return this.asArray().toJsonString()
+            } else {
+                return "null"
+            }
+        }
+
         override fun toString(): String {
             if (this.type == JsonValueType.stringType) {
                 return this.asString()
