@@ -198,16 +198,6 @@ namespace Am.Json {
             return jsonValue != null && jsonValue.isNumber()
         }
 
-        public fun isInteger(key: String): Bool {
-            var jsonValue = this.properties.get(key)
-            return jsonValue != null && jsonValue.isInteger()
-        }
-
-        public fun isDouble(key: String): Bool {
-            var jsonValue = this.properties.get(key)
-            return jsonValue != null && jsonValue.isDouble()
-        }
-
         public fun isBool(key: String): Bool {
             var jsonValue = this.properties.get(key)
             return jsonValue != null && jsonValue.isBool()

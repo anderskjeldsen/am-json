@@ -150,16 +150,6 @@ namespace Am.Json {
             return jsonValue.isNumber()
         }
 
-        public fun isInteger(index: Int): Bool {
-            var jsonValue = this.elements.get(index)
-            return jsonValue.isInteger()
-        }
-
-        public fun isDouble(index: Int): Bool {
-            var jsonValue = this.elements.get(index)
-            return jsonValue.isDouble()
-        }
-
         public fun isBool(index: Int): Bool {
             var jsonValue = this.elements.get(index)
             return jsonValue.isBool()
