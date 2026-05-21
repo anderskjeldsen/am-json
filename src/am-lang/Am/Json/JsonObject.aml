@@ -262,7 +262,12 @@ namespace Am.Json {
                     result = result + ","
                 }
                 
-                result = result + "\"" + key + "\":" + value.toJsonString()
+                // Escape the key the same way as string values —
+                // a `"` or control char in a key would otherwise
+                // emit malformed JSON. Most callers pass safe ASCII
+                // keys, but the helper is cheap when the input is
+                // already escape-free.
+                result = result + "\"" + JsonValue.escapeJsonString(key) + "\":" + value.toJsonString()
                 first = false
                 i = i + 1
             }

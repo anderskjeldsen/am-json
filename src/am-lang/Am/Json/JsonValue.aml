@@ -233,7 +233,7 @@ namespace Am.Json {
 
         public fun toJsonString(): String {
             if (this.type == JsonValueType.stringType) {
-                return "\"" + this.asString() + "\""
+                return "\"" + JsonValue.escapeJsonString(this.asString()) + "\""
             } else if (this.type == JsonValueType.numberType) {
                 return this.value as String
             } else if (this.type == JsonValueType.boolType) {
@@ -272,6 +272,76 @@ namespace Am.Json {
                 return this.asArray().toString()
             } else {
                 return "unknown"
+            }
+        }
+
+        // JSON-escape a string for embedding inside a "..." literal.
+        // Mirrors the decoding rules in JsonParser.parseString:
+        //
+        //   \"  \\  \/  \b  \f  \n  \r  \t  and  \u00XX  for any
+        //   remaining control byte (0x00..0x1F).
+        //
+        // Non-control bytes >= 0x20 (including all UTF-8 continuation
+        // bytes for non-ASCII characters like `å`, `→`, `…`) pass
+        // through unchanged — strict JSON permits raw UTF-8 inside
+        // string literals, and OpenAI / every other JSON parser the
+        // ecosystem cares about decodes it natively.
+        //
+        // Originally added because round-tripping a multi-turn chat
+        // through ChatGptClient.complete() failed: the assistant's
+        // first reply landed in the message history with embedded
+        // newlines, then the second request body emitted those LF
+        // bytes inside string literals and OpenAI rejected the
+        // payload with "We could not parse the JSON body of your
+        // request."
+        static fun escapeJsonString(s: String): String {
+            if (s == null || s.length() == 0) {
+                return ""
+            }
+            var sb = new StringBuilder()
+            var i = 0UI
+            var len = s.length().toUInt()
+            while (i < len) {
+                var c = s.characterAt(i)
+                if (c == 34US) {
+                    sb.add("\\\"")
+                } else if (c == 92US) {
+                    sb.add("\\\\")
+                } else if (c == 8US) {
+                    sb.add("\\b")
+                } else if (c == 9US) {
+                    sb.add("\\t")
+                } else if (c == 10US) {
+                    sb.add("\\n")
+                } else if (c == 12US) {
+                    sb.add("\\f")
+                } else if (c == 13US) {
+                    sb.add("\\r")
+                } else if (c < 32US) {
+                    // Remaining control bytes (NUL, ASCII control
+                    // chars without dedicated escape sequences) →
+                    // \u00XX hex form so the parser doesn't have
+                    // to deal with them as raw bytes.
+                    sb.add("\\u00")
+                    JsonValue.appendHexNibble(sb, (c.toInt() / 16) % 16)
+                    JsonValue.appendHexNibble(sb, c.toInt() % 16)
+                } else {
+                    sb.addChar(c)
+                }
+                i++
+            }
+            return sb.toString()
+        }
+
+        // Append one hex digit (0..15) directly into `sb` as its
+        // character code: '0'..'9' for 0..9, 'a'..'f' for 10..15.
+        // Lowercase to match the canonical JSON output of every
+        // upstream tool we'd diff a payload against.
+        private static fun appendHexNibble(sb: StringBuilder, n: Int) {
+            if (n < 10) {
+                sb.addChar((48 + n).toUShort())
+            } else {
+                sb.addChar((87 + n).toUShort())
             }
         }
     }

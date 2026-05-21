@@ -11,6 +11,42 @@ namespace Tests {
             Assert.assertTrue(json == "\"hello\"")
         }
 
+        // Regression: an unescaped newline inside a string literal
+        // produces invalid JSON (strict parsers reject raw 0x0A
+        // between the surrounding quotes). The renderer must emit
+        // it as \n. Originally tripped by routing a multi-turn chat
+        // through ChatGptClient — the assistant's first reply
+        // arrived with embedded \n, then the second request body
+        // smuggled those into the wire JSON and OpenAI 400'd with
+        // "We could not parse the JSON body of your request."
+        test testStringEscapesNewlineAndQuote() {
+            var value: JsonValue = JsonValue.fromString("line1\nline2 \"q\" \\back")
+            var json: String = value.toJsonString()
+            Assert.assertEquals("\"line1\\nline2 \\\"q\\\" \\\\back\"", json)
+        }
+
+        // UTF-8 bytes for non-ASCII characters (the å in "Bokmål")
+        // pass through untouched — JSON permits raw UTF-8 in string
+        // literals and OpenAI / every other modern parser decodes
+        // it natively. Escaping it to \u00XX would also be valid
+        // but produces noisier output.
+        test testStringPassesUtf8Through() {
+            var value: JsonValue = JsonValue.fromString("Bokmål")
+            var json: String = value.toJsonString()
+            Assert.assertEquals("\"Bokmål\"", json)
+        }
+
+        // Control characters without a dedicated escape (e.g. 0x01)
+        // render as  so the parser doesn't have to deal with
+        // raw bytes below 0x20.
+        test testStringEscapesGenericControlChar() {
+            var ctrl: UByte[] = [1UB]
+            var raw = String.fromBytes(ctrl, "UTF-8")
+            var value: JsonValue = JsonValue.fromString(raw)
+            var json: String = value.toJsonString()
+            Assert.assertEquals("\"\\u0001\"", json)
+        }
+
         test testNumberRendering() {
             var value: JsonValue = JsonValue.fromInteger(42)
             var json: String = value.toJsonString()
