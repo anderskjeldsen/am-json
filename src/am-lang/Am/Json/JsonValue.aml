@@ -325,6 +325,25 @@ namespace Am.Json {
                     sb.add("\\u00")
                     JsonValue.appendHexNibble(sb, (c.toInt() / 16) % 16)
                     JsonValue.appendHexNibble(sb, c.toInt() % 16)
+                } else if (c >= 128US) {
+                    // High-bit characters (>=128) are emitted as
+                    // \uXXXX so the serialised JSON is always pure
+                    // ASCII. Without this, raw Latin-1 / Win-1252
+                    // bytes from AmigaOS source files (e.g. Norwegian
+                    // 'å'=0xE5) are emitted verbatim, and any parser
+                    // that requires UTF-8 (OpenAI's chat endpoint
+                    // returns 400 "error parsing the body") rejects
+                    // the document outright. For Latin-1 input the
+                    // codepoint matches Unicode directly; for genuine
+                    // UTF-8 input each byte of a multi-byte sequence
+                    // is emitted as its own codepoint — lossy for
+                    // CJK but yields valid JSON either way.
+                    var v = c.toInt()
+                    sb.add("\\u")
+                    JsonValue.appendHexNibble(sb, (v / 4096) % 16)
+                    JsonValue.appendHexNibble(sb, (v / 256) % 16)
+                    JsonValue.appendHexNibble(sb, (v / 16) % 16)
+                    JsonValue.appendHexNibble(sb, v % 16)
                 } else {
                     sb.addChar(c)
                 }

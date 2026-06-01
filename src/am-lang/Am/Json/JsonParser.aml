@@ -73,24 +73,29 @@ namespace Am.Json {
                     if (c2 == 0US) {
                         throw new Exception("Unterminated escape sequence")
                     } else if (c2 == 110US) { // 'n'
-                        sb.add("\n")
+                        // NOTE: must use addChar(<code>) here — AmLang
+                        // doesn't decode `\n`/`\t`/etc. inside string
+                        // literals, so `sb.add("\n")` would append the
+                        // two-byte sequence `\` + `n` instead of a real
+                        // 0x0a byte. Same applies to every escape below.
+                        sb.addChar(10US)
                     } else if (c2 == 116US) { // 't'
-                        sb.add("\t")
+                        sb.addChar(9US)
                     } else if (c2 == 114US) { // 'r'
-                        sb.add("\r")
+                        sb.addChar(13US)
                     } else if (c2 == 98US) { // 'b'
-                        sb.add("\b")
+                        sb.addChar(8US)
                     } else if (c2 == 102US) { // 'f'
-                        sb.add("\f")
+                        sb.addChar(12US)
                     } else if (c2 == 34US) { // '"'
-                        sb.add("\"")
+                        sb.addChar(34US)
                     } else if (c2 == 92US) { // '\'
-                        sb.add("\\")
+                        sb.addChar(92US)
                     } else if (c2 == 47US) { // '/'
-                        sb.add("/")
+                        sb.addChar(47US)
                     } else {
                         // For other escape sequences, just add the character as-is
-                        sb.add(c2.toString())
+                        sb.addChar(c2)
                     }
                     this.parser.skip(1UI) // skip the escaped character
                 } else if (c1 == JsonParser.doubleQuote) {
