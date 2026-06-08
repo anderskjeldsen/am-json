@@ -1,0 +1,40 @@
+namespace Am.Json {
+
+    // Lexical-token categories emitted by JsonLexer. Numeric ordering
+    // is not part of the public contract — code should compare by name
+    // (e.g. `kind == JsonTokenKind.stringValue`), not by integer value.
+    //
+    // Identifiers are spelled with the `Value` / `Open` / `Close`
+    // suffixes (rather than the natural `string` / `null` / `open` /
+    // `for`) to dodge AmLang keyword collisions in any consumer that
+    // unpacks the enum into local names.
+    enum JsonTokenKind {
+        // The whole `"..."` literal, escapes included.
+        stringValue = 0
+        // A single escape sequence (`\\X` or `\\uXXXX`) *inside* a
+        // stringValue token. Emitted as a separate token covering
+        // only the escape characters so a consumer that wants to
+        // tint escapes differently from the surrounding string can.
+        stringEscape = 1
+        // Numeric literal — RFC 8259 grammar plus a permissive
+        // trailing-dot tolerance.
+        numberValue = 2
+        // `true` or `false`.
+        boolValue = 3
+        // `null`.
+        nullValue = 4
+        // `{`
+        braceOpen = 5
+        // `}`
+        braceClose = 6
+        // `[`
+        bracketOpen = 7
+        // `]`
+        bracketClose = 8
+        // `,`
+        comma = 9
+        // `:`
+        colon = 10
+    }
+
+}

@@ -1,0 +1,14 @@
+namespace Am.Json {
+
+    // Single token emitted by JsonLexer: a half-open character span
+    // [startCol, startCol + length) and the category it represents.
+    //
+    // Columns are 0-based indices into the source line that JsonLexer
+    // was handed. The lexer never produces tokens that cross line
+    // boundaries — a `"...` that never closes runs to end-of-line and
+    // does NOT continue onto the next line.
+    class JsonToken(var startCol: Int, var length: Int, var kind: JsonTokenKind) {
+        import Am.Lang
+    }
+
+}

@@ -1,0 +1,248 @@
+namespace Am.Json {
+
+    // Tolerant per-line JSON lexer. Unlike JsonParser (which is built
+    // to *consume* well-formed JSON and throws on the half-typed input
+    // an editor sees most of the time), JsonLexer never throws — it
+    // walks one line once, emits the recognisable tokens, and skips
+    // anything it doesn't understand.
+    //
+    // Designed primarily for the IDE's syntax-highlighting pipeline:
+    // give it the buffer one line at a time, get back coloured spans.
+    // A future JsonParser refactor can also be driven off the same
+    // token stream, but that's out of scope for v1 — JsonParser keeps
+    // its own char-walking for now.
+    //
+    // Behavioural quirks worth knowing:
+    //
+    //   - Strings are line-local. RFC 8259 forbids raw newlines inside
+    //     `"..."` strings, so the lexer follows: an unclosed `"` runs
+    //     to end-of-line and does not carry state into the next line.
+    //     This makes mid-typing recovery automatic — the next line
+    //     starts fresh.
+    //
+    //   - Escapes inside strings are emitted as separate tokens (kind
+    //     stringEscape) nested within the surrounding stringValue
+    //     token. Consumers that don't want fine grain can just ignore
+    //     stringEscape entries.
+    //
+    //   - Numbers follow RFC 8259 (`-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?`)
+    //     with a single permissive extension: a trailing `.` with no
+    //     fractional digits is still accepted as a number token. The
+    //     surface parser rejects it later; the lexer's job is to give
+    //     the editor something to paint.
+    //
+    //   - No comments. Standard JSON has none. JSON-with-Comments
+    //     callers can layer their own pass on top; we deliberately do
+    //     not blur the standard here.
+    class JsonLexer {
+        import Am.Lang
+        import Am.Collections
+
+        // -------- character classification ------------------------
+        // UShort literals in-line so the hot loop never dispatches.
+
+        private static fun isDigit(c: UShort): Bool {
+            return c >= 48US && c <= 57US
+        }
+
+        private static fun isHexDigit(c: UShort): Bool {
+            if (c >= 48US && c <= 57US)  { return true }   // 0..9
+            if (c >= 65US && c <= 70US)  { return true }   // A..F
+            if (c >= 97US && c <= 102US) { return true }   // a..f
+            return false
+        }
+
+        private static fun isIdentStart(c: UShort): Bool {
+            if (c >= 65US && c <= 90US)  { return true }
+            if (c >= 97US && c <= 122US) { return true }
+            return false
+        }
+
+        private static fun isIdentCont(c: UShort): Bool {
+            if (JsonLexer.isDigit(c)) { return true }
+            return JsonLexer.isIdentStart(c)
+        }
+
+        // -------- API ----------------------------------------------
+
+        // Tokenise one line. Returns the recognised tokens in column
+        // order; unrecognised characters produce no token (the caller
+        // can fill the gaps with whatever default colour / handling
+        // it likes). Never throws.
+        static fun lexLine(lineText: String): List<JsonToken> {
+            var out = new List<JsonToken>()
+            if (lineText == null || lineText.length() == 0) {
+                return out
+            }
+            var len = lineText.length()
+            var i = 0
+
+            while (i < len) {
+                var c = lineText.characterAt(i.toUInt())
+
+                // ---- string literal "..." ----
+                if (c == 34US) {
+                    var start = i
+                    var j = i + 1
+                    var escapes: List<JsonToken> = new List<JsonToken>()
+                    while (j < len) {
+                        var cj = lineText.characterAt(j.toUInt())
+                        if (cj == 92US) {
+                            // Escape: `\X` is 2 chars; `\uXXXX` is 6.
+                            // The `u` form requires four valid hex
+                            // digits, otherwise we fall back to the
+                            // 2-char form (and let the parser yell).
+                            var escLen = 2
+                            if (j + 1 < len && lineText.characterAt((j + 1).toUInt()) == 117US) {
+                                var allHex = true
+                                var k = 0
+                                while (k < 4) {
+                                    var idx = j + 2 + k
+                                    if (idx >= len || !JsonLexer.isHexDigit(lineText.characterAt(idx.toUInt()))) {
+                                        allHex = false
+                                        k = 4
+                                    }
+                                    k = k + 1
+                                }
+                                if (allHex) {
+                                    escLen = 6
+                                }
+                            }
+                            // Clamp at end-of-line so we don't emit a
+                            // token that overshoots the buffer.
+                            if (j + escLen > len) {
+                                escLen = len - j
+                            }
+                            escapes.add(new JsonToken(j, escLen, JsonTokenKind.stringEscape))
+                            j = j + escLen
+                            continue
+                        }
+                        if (cj == 34US) {
+                            j = j + 1
+                            break
+                        }
+                        j = j + 1
+                    }
+                    // Outer string span first, escapes after — order
+                    // matches how a typical highlighter walks the
+                    // token list to layer the more-specific colour on
+                    // top of the less-specific one.
+                    out.add(new JsonToken(start, j - start, JsonTokenKind.stringValue))
+                    var ei = 0
+                    while (ei < escapes.getSize()) {
+                        out.add(escapes.get(ei))
+                        ei = ei + 1
+                    }
+                    i = j
+                    continue
+                }
+
+                // ---- number literal ----
+                if (c == 45US || JsonLexer.isDigit(c)) {
+                    // A standalone `-` not followed by a digit is not
+                    // a number — skip it so we don't produce a
+                    // zero-width token while the user is mid-edit.
+                    if (c == 45US) {
+                        if (i + 1 >= len || !JsonLexer.isDigit(lineText.characterAt((i + 1).toUInt()))) {
+                            i = i + 1
+                            continue
+                        }
+                    }
+                    var start = i
+                    var j = i
+                    if (lineText.characterAt(j.toUInt()) == 45US) {
+                        j = j + 1
+                    }
+                    while (j < len && JsonLexer.isDigit(lineText.characterAt(j.toUInt()))) {
+                        j = j + 1
+                    }
+                    if (j < len && lineText.characterAt(j.toUInt()) == 46US) {
+                        j = j + 1
+                        while (j < len && JsonLexer.isDigit(lineText.characterAt(j.toUInt()))) {
+                            j = j + 1
+                        }
+                    }
+                    if (j < len) {
+                        var ce = lineText.characterAt(j.toUInt())
+                        if (ce == 101US || ce == 69US) {
+                            var k = j + 1
+                            if (k < len) {
+                                var sign = lineText.characterAt(k.toUInt())
+                                if (sign == 43US || sign == 45US) {
+                                    k = k + 1
+                                }
+                            }
+                            if (k < len && JsonLexer.isDigit(lineText.characterAt(k.toUInt()))) {
+                                j = k
+                                while (j < len && JsonLexer.isDigit(lineText.characterAt(j.toUInt()))) {
+                                    j = j + 1
+                                }
+                            }
+                        }
+                    }
+                    out.add(new JsonToken(start, j - start, JsonTokenKind.numberValue))
+                    i = j
+                    continue
+                }
+
+                // ---- identifier-shaped literal: true / false / null ----
+                if (JsonLexer.isIdentStart(c)) {
+                    var start = i
+                    var j = i + 1
+                    while (j < len && JsonLexer.isIdentCont(lineText.characterAt(j.toUInt()))) {
+                        j = j + 1
+                    }
+                    var word = lineText.substring(start.toUInt(), (j - start).toUInt())
+                    if (word.equals("true") || word.equals("false")) {
+                        out.add(new JsonToken(start, j - start, JsonTokenKind.boolValue))
+                    } else if (word.equals("null")) {
+                        out.add(new JsonToken(start, j - start, JsonTokenKind.nullValue))
+                    }
+                    // Other bare identifiers aren't legal JSON; we
+                    // emit nothing and let the caller decide what to
+                    // do with them.
+                    i = j
+                    continue
+                }
+
+                // ---- structural punctuation ----
+                if (c == 123US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.braceOpen))
+                    i = i + 1
+                    continue
+                }
+                if (c == 125US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.braceClose))
+                    i = i + 1
+                    continue
+                }
+                if (c == 91US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.bracketOpen))
+                    i = i + 1
+                    continue
+                }
+                if (c == 93US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.bracketClose))
+                    i = i + 1
+                    continue
+                }
+                if (c == 44US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.comma))
+                    i = i + 1
+                    continue
+                }
+                if (c == 58US) {
+                    out.add(new JsonToken(i, 1, JsonTokenKind.colon))
+                    i = i + 1
+                    continue
+                }
+
+                // ---- whitespace + unknown ----
+                i = i + 1
+            }
+
+            return out
+        }
+    }
+
+}
