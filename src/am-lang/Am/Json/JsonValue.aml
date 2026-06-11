@@ -9,10 +9,10 @@ namespace Am.Json {
         arrayType = 6
     }
 
-    class JsonValue(private var value: Any?, private var type: JsonValueType) {
+    class JsonValue(private var value: Any, private var type: JsonValueType) {
         import Am.Lang
 
-        public fun getValue(): Any? {
+        public fun getValue(): Any {
             return this.value
         }
 
@@ -227,7 +227,7 @@ namespace Am.Json {
         }
 
         static fun fromNull(): JsonValue {
-            var nullValue: Any? = null
+            var nullValue: Any = null
             return new JsonValue(nullValue, JsonValueType.nullType)
         }
 
