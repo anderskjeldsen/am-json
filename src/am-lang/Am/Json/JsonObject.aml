@@ -90,6 +90,14 @@ namespace Am.Json {
             throw new Exception("Key '" + key + "' not found")
         }
 
+        public fun getFloat(key: String): Float {
+            var jsonValue = this.properties.get(key)
+            if (jsonValue != null) {
+                return jsonValue.asFloat()
+            }
+            throw new Exception("Key '" + key + "' not found")
+        }
+
         public fun getLong(key: String): Long {
             var jsonValue = this.properties.get(key)
             if (jsonValue != null) {

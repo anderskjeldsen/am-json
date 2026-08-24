@@ -93,6 +93,47 @@ namespace Am.Json {
                         sb.addChar(92US)
                     } else if (c2 == 47US) { // '/'
                         sb.addChar(47US)
+                    } else if (c2 == 117US) { // 'u'
+                        // \uXXXX — parse 4 hex digits into a codepoint,
+                        // then emit UTF-8. For a surrogate high half
+                        // (0xD800..0xDBFF), the JSON spec REQUIRES a
+                        // second `\uXXXX` in the low-surrogate range
+                        // (0xDC00..0xDFFF) — combine them to a
+                        // supplementary codepoint (0x10000..0x10FFFF).
+                        // A lone / mismatched surrogate emits U+FFFD
+                        // (replacement character) so downstream tools
+                        // still see valid UTF-8 instead of a bare
+                        // half-surrogate that would break `strlen` /
+                        // display / write-to-file.
+                        this.parser.skip(1UI) // skip 'u'
+                        var cp = JsonParser.readHex4(this.parser)
+                        if (cp >= 0xD800 && cp <= 0xDBFF) {
+                            // High surrogate — must be followed by \uDCxx.
+                            var haveLo = false
+                            var lo = 0
+                            if (this.parser.hasMore() && this.parser.peekChar() == JsonParser.backslash) {
+                                this.parser.skip(1UI)
+                                if (this.parser.hasMore() && this.parser.peekChar() == 117US) {
+                                    this.parser.skip(1UI)
+                                    lo = JsonParser.readHex4(this.parser)
+                                    if (lo >= 0xDC00 && lo <= 0xDFFF) {
+                                        haveLo = true
+                                    }
+                                }
+                            }
+                            if (haveLo) {
+                                cp = 0x10000 + ((cp - 0xD800) * 0x400) + (lo - 0xDC00)
+                            } else {
+                                cp = 0xFFFD
+                            }
+                        } else if (cp >= 0xDC00 && cp <= 0xDFFF) {
+                            // Lone low surrogate.
+                            cp = 0xFFFD
+                        }
+                        JsonParser.appendUtf8(sb, cp)
+                        // We already consumed the escape body via
+                        // readHex4; skip the `continue` fall-through.
+                        continue
                     } else {
                         // For other escape sequences, just add the character as-is
                         sb.addChar(c2)
@@ -207,6 +248,65 @@ namespace Am.Json {
                 }
             }
             return jsonObject
+        }
+
+        // Parse exactly 4 hex digits from the current parser position,
+        // advancing past them. Returns the integer value. Throws if any
+        // of the 4 characters isn't a valid hex digit — that's a
+        // malformed JSON escape, same class as an unterminated string.
+        private static fun readHex4(parser: TextParser): Int {
+            var v = 0
+            var i = 0
+            while (i < 4) {
+                if (!parser.hasMore()) {
+                    throw new Exception("Truncated \\uXXXX escape")
+                }
+                var c = parser.peekChar()
+                var d = 0
+                if (c >= 48US && c <= 57US) {
+                    d = (c - 48US) as Int
+                } else if (c >= 65US && c <= 70US) {
+                    d = ((c - 65US) as Int) + 10
+                } else if (c >= 97US && c <= 102US) {
+                    d = ((c - 97US) as Int) + 10
+                } else {
+                    throw new Exception("Invalid hex digit in \\uXXXX escape")
+                }
+                v = (v * 16) + d
+                parser.skip(1UI)
+                i = i + 1
+            }
+            return v
+        }
+
+        // Emit UTF-8 for a Unicode codepoint (0..0x10FFFF) as one to
+        // four bytes into the StringBuilder. StringBuilder.addChar
+        // stores the low 8 bits verbatim (see its TODO note), so we can
+        // stream the bytes through it without triggering the
+        // truncation-above-0xFF behaviour — we've already broken the
+        // codepoint into ≤0xFF bytes ourselves.
+        //
+        // Byte-count / prefix table:
+        //   1 byte  0xxxxxxx                          U+0000..U+007F
+        //   2 bytes 110xxxxx 10xxxxxx                 U+0080..U+07FF
+        //   3 bytes 1110xxxx 10xxxxxx 10xxxxxx        U+0800..U+FFFF
+        //   4 bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  U+10000..U+10FFFF
+        private static fun appendUtf8(sb: StringBuilder, cp: Int) {
+            if (cp < 0x80) {
+                sb.addChar(cp as UShort)
+            } else if (cp < 0x800) {
+                sb.addChar((0xC0 | ((cp >> 6) & 0x1F)) as UShort)
+                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
+            } else if (cp < 0x10000) {
+                sb.addChar((0xE0 | ((cp >> 12) & 0x0F)) as UShort)
+                sb.addChar((0x80 | ((cp >> 6) & 0x3F)) as UShort)
+                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
+            } else {
+                sb.addChar((0xF0 | ((cp >> 18) & 0x07)) as UShort)
+                sb.addChar((0x80 | ((cp >> 12) & 0x3F)) as UShort)
+                sb.addChar((0x80 | ((cp >> 6) & 0x3F)) as UShort)
+                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
+            }
         }
     }
 }

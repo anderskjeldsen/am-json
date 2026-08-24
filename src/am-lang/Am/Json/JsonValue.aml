@@ -255,11 +255,11 @@ namespace Am.Json {
 
         override fun toString(): String {
             if (this.type == JsonValueType.stringType) {
-                return this.asString()
+                return either(this.asString(), "[]")
             } else if (this.type == JsonValueType.numberType) {
-                return this.value as String
+                return either(this.value as String, "0")
             } else if (this.type == JsonValueType.boolType) {
-                if (this.asBool()) {
+                if (either(this.asBool(), false)) {
                     return "true"
                 } else {
                     return "false"
@@ -267,9 +267,9 @@ namespace Am.Json {
             } else if (this.type == JsonValueType.nullType) {
                 return "null"
             } else if (this.type == JsonValueType.objectType) {
-                return this.asObject().toString()
+                return either(this.asObject().toString(), "{}")
             } else if (this.type == JsonValueType.arrayType) {
-                return this.asArray().toString()
+                return either(this.asArray().toString(), "[]")
             } else {
                 return "unknown"
             }

@@ -89,6 +89,11 @@ namespace Am.Json {
             return jsonValue.asInteger()
         }
 
+        public fun getFloat(index: Int): Float {
+            var jsonValue = this.elements.get(index)
+            return jsonValue.asFloat()
+        }
+
         public fun getLong(index: Int): Long {
             var jsonValue = this.elements.get(index)
             return jsonValue.asLong()
