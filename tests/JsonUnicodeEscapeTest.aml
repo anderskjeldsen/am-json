@@ -1,0 +1,44 @@
+namespace Am.Json.Tests {
+    class JsonUnicodeEscapeTest {
+        import Am.Lang
+        import Am.Json
+        import Am.Tests
+        import Am.Util.Parsers.Text
+
+        // Round-trip a JSON string containing \uXXXX escapes for four
+        // code-unit sizes:
+        //   * ASCII (A = "A")             — one UTF-8 byte
+        //   * Latin-1 (é = "é")           — two UTF-8 bytes
+        //   * BMP (“ = "“")          — three UTF-8 bytes
+        //   * Supplementary (😀, U+1F600 grinning face) —
+        //                                        four UTF-8 bytes
+        // Each expected value is spelled out as raw UTF-8 bytes so the
+        // assertion doesn't depend on AmLang string-literal encoding.
+        test unicodeEscapeDecoded() {
+            var quoteBytes: UByte[] = [34UB]
+            var quote = String.fromBytes(quoteBytes, "UTF-8")
+            var jsonStr = "[" + quote + "\\u0041" + quote
+                + "," + quote + "\\u00e9" + quote
+                + "," + quote + "\\u201c" + quote
+                + "," + quote + "\\uD83D\\uDE00" + quote + "]"
+            var parser = new JsonParser(new TextParser(jsonStr))
+            var root = parser.parse()
+            var arr = root.asArray()
+
+            var s0 = arr.getValue(0).asString()
+            var s1 = arr.getValue(1).asString()
+            var s2 = arr.getValue(2).asString()
+            var s3 = arr.getValue(3).asString()
+
+            var expA: UByte[] = [65UB]
+            var expE: UByte[] = [195UB, 169UB]
+            var expQ: UByte[] = [226UB, 128UB, 156UB]
+            var expF: UByte[] = [240UB, 159UB, 152UB, 128UB]
+
+            Assert.assertTrue(s0 == String.fromBytes(expA, "UTF-8"))
+            Assert.assertTrue(s1 == String.fromBytes(expE, "UTF-8"))
+            Assert.assertTrue(s2 == String.fromBytes(expQ, "UTF-8"))
+            Assert.assertTrue(s3 == String.fromBytes(expF, "UTF-8"))
+        }
+    }
+}
