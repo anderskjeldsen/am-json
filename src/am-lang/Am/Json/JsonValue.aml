@@ -281,11 +281,32 @@ namespace Am.Json {
         //   \"  \\  \/  \b  \f  \n  \r  \t  and  \u00XX  for any
         //   remaining control byte (0x00..0x1F).
         //
-        // Non-control bytes >= 0x20 (including all UTF-8 continuation
-        // bytes for non-ASCII characters like `å`, `→`, `…`) pass
-        // through unchanged — strict JSON permits raw UTF-8 inside
-        // string literals, and OpenAI / every other JSON parser the
-        // ecosystem cares about decodes it natively.
+        // HIGH BYTES (>= 0x80) are where the care is needed, because an
+        // AmLang String is a byte array with no declared encoding and two
+        // very different kinds of content arrive in one:
+        //
+        //   * VALID UTF-8 -- anything that came off the network or out of
+        //     a UTF-8 editor buffer. These bytes are passed through
+        //     VERBATIM. Strict JSON permits raw UTF-8 in a string, every
+        //     parser decodes it, and the bytes survive a save/load round
+        //     trip unchanged.
+        //
+        //   * LONE HIGH BYTES -- Latin-1 / Win-1252 text from an AmigaOS
+        //     source file, where 'å' is the single byte 0xE5. That is not
+        //     valid UTF-8, and emitting it raw produces a document strict
+        //     parsers reject outright (OpenAI answers 400 "error parsing
+        //     the body"). Those are escaped as \u00XX, whose codepoint
+        //     matches Latin-1 exactly.
+        //
+        // Escaping the UTF-8 case as well -- which this used to do -- is
+        // what made a Norwegian 'o-slash' in a chat transcript grow into
+        // ~100 characters: each of its two bytes became its own \uXXXX
+        // codepoint, the parser re-encoded each of those as multi-byte
+        // UTF-8, and the next save escaped every one of THOSE bytes
+        // again. Round trips multiplied the length instead of preserving
+        // it. Byte-exactness for valid UTF-8 is what stops that, and it
+        // also means the remote API receives the character the user
+        // actually typed rather than mojibake.
         //
         // Originally added because round-tripping a multi-turn chat
         // through ChatGptClient.complete() failed: the assistant's
@@ -326,30 +347,90 @@ namespace Am.Json {
                     JsonValue.appendHexNibble(sb, (c.toInt() / 16) % 16)
                     JsonValue.appendHexNibble(sb, c.toInt() % 16)
                 } else if (c >= 128US) {
-                    // High-bit characters (>=128) are emitted as
-                    // \uXXXX so the serialised JSON is always pure
-                    // ASCII. Without this, raw Latin-1 / Win-1252
-                    // bytes from AmigaOS source files (e.g. Norwegian
-                    // 'å'=0xE5) are emitted verbatim, and any parser
-                    // that requires UTF-8 (OpenAI's chat endpoint
-                    // returns 400 "error parsing the body") rejects
-                    // the document outright. For Latin-1 input the
-                    // codepoint matches Unicode directly; for genuine
-                    // UTF-8 input each byte of a multi-byte sequence
-                    // is emitted as its own codepoint — lossy for
-                    // CJK but yields valid JSON either way.
-                    var v = c.toInt()
-                    sb.add("\\u")
-                    JsonValue.appendHexNibble(sb, (v / 4096) % 16)
-                    JsonValue.appendHexNibble(sb, (v / 256) % 16)
-                    JsonValue.appendHexNibble(sb, (v / 16) % 16)
-                    JsonValue.appendHexNibble(sb, v % 16)
+                    // Part of a well-formed UTF-8 sequence: copy the
+                    // whole sequence through untouched. Checked as a
+                    // sequence rather than a byte at a time because a
+                    // continuation byte is only meaningful after its
+                    // lead byte.
+                    var seqLen = JsonValue.utf8SequenceLength(s, i, len)
+                    if (seqLen > 0UI) {
+                        var k = 0UI
+                        while (k < seqLen) {
+                            sb.addChar(s.characterAt(i + k))
+                            k++
+                        }
+                        // -1 because the loop's own i++ adds the last one.
+                        i = i + seqLen - 1UI
+                    } else {
+                        // Not valid UTF-8 -- a lone high byte, almost
+                        // always Latin-1 from an Amiga text file. Emit it
+                        // as \u00XX: the codepoint matches Latin-1, and
+                        // the document stays parseable by a strict reader.
+                        var v = c.toInt() % 256
+                        sb.add("\\u00")
+                        JsonValue.appendHexNibble(sb, (v / 16) % 16)
+                        JsonValue.appendHexNibble(sb, v % 16)
+                    }
                 } else {
                     sb.addChar(c)
                 }
                 i++
             }
             return sb.toString()
+        }
+
+        // Length of the well-formed UTF-8 sequence starting at `at`, or 0
+        // when the bytes there are not one. Rejects the malformed shapes a
+        // strict decoder rejects -- overlong encodings, surrogates encoded
+        // as three bytes, codepoints past U+10FFFF, truncated sequences,
+        // and missing continuation bytes -- because passing any of those
+        // through raw produces a document a strict JSON reader refuses,
+        // which is the failure this whole branch exists to avoid.
+        static fun utf8SequenceLength(s: String, at: UInt, len: UInt): UInt {
+            var b0 = s.characterAt(at).toInt()
+            var need = 0
+            var cp = 0
+            if (b0 >= 0xC2 && b0 <= 0xDF) {
+                need = 1
+                cp = b0 - 0xC0
+            } else if (b0 >= 0xE0 && b0 <= 0xEF) {
+                need = 2
+                cp = b0 - 0xE0
+            } else if (b0 >= 0xF0 && b0 <= 0xF4) {
+                need = 3
+                cp = b0 - 0xF0
+            } else {
+                // 0x80..0xC1 -- a continuation byte with no lead, or an
+                // overlong two-byte form. 0xF5..0xFF -- past U+10FFFF.
+                return 0UI
+            }
+            if (at + need.toUInt() >= len) {
+                return 0UI
+            }
+            var k = 1
+            while (k <= need) {
+                var bn = s.characterAt(at + k.toUInt()).toInt()
+                if (bn < 0x80 || bn > 0xBF) {
+                    return 0UI
+                }
+                cp = (cp * 64) + (bn - 0x80)
+                k = k + 1
+            }
+            // Overlong forms and the surrogate range are ill-formed even
+            // though their bytes look structurally fine.
+            if (need == 2 && cp < 0x800) {
+                return 0UI
+            }
+            if (need == 3 && cp < 0x10000) {
+                return 0UI
+            }
+            if (cp >= 0xD800 && cp <= 0xDFFF) {
+                return 0UI
+            }
+            if (cp > 0x10FFFF) {
+                return 0UI
+            }
+            return (need + 1).toUInt()
         }
 
         // Append one hex digit (0..15) directly into `sb` as its
