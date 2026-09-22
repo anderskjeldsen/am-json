@@ -1,0 +1,165 @@
+namespace Am.Json.Tests {
+
+    #reflect
+    class JtOrder(var id: Int, var customer: JtCustomer) {
+        import Am.Lang
+        import Am.Collections
+
+        var lines: List<JtLine> = List<JtLine>.newList<JtLine>()
+        var tags: String[] = new String[0]
+        var note: String? = null
+        var shipTo: JtAddress? = null
+        var paid: Bool = false
+        var total: Double = 0.0
+        var labels: HashSet<String> = new HashSet<String>()
+        var meta: HashMap<String, String> = new HashMap<String, String>()
+        var counts: HashMap<String, Int> = new HashMap<String, Int>()
+    }
+
+    class JtCustomer(var name: String, var email: String) {
+        import Am.Lang
+    }
+
+    class JtLine(var sku: String, var qty: Int) {
+        import Am.Lang
+    }
+
+    class JtAddress(var street: String) {
+        import Am.Lang
+    }
+
+    class JtHomeAddress(street: String, var floor: Int) : JtAddress(street) {
+        import Am.Lang
+    }
+
+    // A TreeSet keeps its order but cannot be rebuilt: its comparator comes
+    // from the constructor, which reflection does not run.
+    #reflect
+    class JtSorted {
+        import Am.Lang
+        import Am.Collections
+
+        var values: TreeSet<Int> = new TreeSet<Int>((a, b) => {
+            return a - b
+        })
+    }
+
+    class JsonReflectTest {
+        import Am.Lang
+        import Am.Collections
+        import Am.Json
+        import Am.Tests
+
+        private fun sample(): JtOrder {
+            var o = new JtOrder(7, new JtCustomer("Ann", "ann@x"))
+            o.lines.add(new JtLine("A-1", 2))
+            o.lines.add(new JtLine("B-2", 5))
+            o.tags = ["rush", "gift"]
+            o.note = "leave at door"
+            o.shipTo = new JtHomeAddress("Main st 1", 3)
+            o.paid = true
+            o.total = 12.5
+            o.labels.add("blue")
+            o.meta.set("channel", "web")
+            o.meta.set("locale", "nb-NO")
+            o.counts.set("boxes", 3)
+            return o
+        }
+
+        test serializesReflectedGraph() {
+            var text = Json.serialize(this.sample())
+            var v = Json.parse(text)
+            Assert.assertTrue(v.isObject())
+            var jo = v.asObject()
+            Assert.assertEquals(7, jo.getInt("id"))
+            Assert.assertEquals("Ann", jo.getValue("customer").asObject().getString("name"))
+            Assert.assertEquals(2, jo.getValue("lines").asArray().size())
+            Assert.assertEquals("B-2", jo.getValue("lines").asArray().getJsonObject(1).getString("sku"))
+            Assert.assertEquals(2, jo.getValue("tags").asArray().size())
+            Assert.assertEquals("gift", jo.getValue("tags").asArray().getString(1))
+            Assert.assertEquals("leave at door", jo.getString("note"))
+            Assert.assertTrue(jo.getBool("paid"))
+            // A subclass in an Address slot carries its class name.
+            Assert.assertEquals("Am.Json.Tests.JtHomeAddress", jo.getValue("shipTo").asObject().getString("@type"))
+            Assert.assertEquals(3, jo.getValue("shipTo").asObject().getInt("floor"))
+            // A HashMap<String, V> is a JSON object, not an array of entries.
+            // A set is an array.
+            Assert.assertEquals(1, jo.getValue("labels").asArray().size())
+            Assert.assertEquals("blue", jo.getValue("labels").asArray().getString(0))
+            var meta = jo.getValue("meta").asObject()
+            Assert.assertEquals(2, meta.size())
+            Assert.assertEquals("web", meta.getString("channel"))
+            Assert.assertEquals(3, jo.getValue("counts").asObject().getInt("boxes"))
+        }
+
+        test roundTrip() {
+            var text = Json.serialize(this.sample())
+            var back = Json.deserialize<JtOrder>(text)
+            Assert.assertEquals(7, back.id)
+            Assert.assertEquals("Ann", back.customer.name)
+            Assert.assertEquals("ann@x", back.customer.email)
+            Assert.assertEquals(2, back.lines.getSize())
+            Assert.assertEquals("A-1", back.lines.get(0).sku)
+            Assert.assertEquals(5, back.lines.get(1).qty)
+            Assert.assertEquals(2UI, back.tags.length())
+            Assert.assertEquals("rush", back.tags[0UI])
+            Assert.assertEquals("leave at door", back.note)
+            Assert.assertTrue(back.paid)
+            Assert.assertTrue(back.total == 12.5)
+            Assert.assertEquals("Am.Json.Tests.JtHomeAddress", back.shipTo.getClassRef().getClassName())
+            Assert.assertEquals(3, (back.shipTo as JtHomeAddress).floor)
+            Assert.assertTrue(back.labels.contains("blue"))
+            back.labels.add("red")
+            Assert.assertEquals(2, back.labels.getSize())
+            Assert.assertEquals("nb-NO", back.meta.get("locale"))
+            Assert.assertEquals(3, back.counts.get("boxes"))
+            // A rebuilt map is a real map: it keeps working.
+            back.meta.set("extra", "yes")
+            Assert.assertEquals(3, back.meta.getSize())
+            // The rebuilt list is a real List: it keeps working.
+            back.lines.add(new JtLine("C-3", 1))
+            Assert.assertEquals(3, back.lines.getSize())
+            Assert.assertEquals(Json.serialize(this.sample()), Json.serialize(Json.deserialize<JtOrder>(text)))
+        }
+
+        test nullsAndMissingKeys() {
+            var back = Json.deserialize<JtOrder>("{\"id\": 3, \"customer\": {\"name\": \"Bo\", \"email\": \"b@x\"}, \"note\": null}")
+            Assert.assertEquals(3, back.id)
+            Assert.assertTrue(back.note == null)
+            Assert.assertTrue(back.shipTo == null)
+            Assert.assertEquals(0, back.lines.getSize())
+            Assert.assertTrue(!back.paid)
+        }
+
+        test treeSetSerializesSortedAndRefusesToRebuild() {
+            var s = new JtSorted()
+            s.values.add(3)
+            s.values.add(1)
+            s.values.add(2)
+            var text = Json.serialize(s)
+            var arr = Json.parse(text).asObject().getValue("values").asArray()
+            Assert.assertEquals(3, arr.size())
+            Assert.assertEquals(1, arr.getInt(0))
+            Assert.assertEquals(2, arr.getInt(1))
+            Assert.assertEquals(3, arr.getInt(2))
+
+            var threw = false
+            try {
+                Json.deserialize<JtSorted>(text)
+            } catch (ex: Exception) {
+                threw = true
+            }
+            Assert.assertTrue(threw)
+        }
+
+        test unreflectedClassIsRefused() {
+            var threw = false
+            try {
+                Json.serialize(new StringBuilder())
+            } catch (ex: Exception) {
+                threw = true
+            }
+            Assert.assertTrue(threw)
+        }
+    }
+}

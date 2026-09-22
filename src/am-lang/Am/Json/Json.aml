@@ -1,0 +1,279 @@
+namespace Am.Json {
+    /**
+     * JSON for `#reflect` classes: serialize any reflected object graph, and rebuild one from
+     * text. Objects become JSON objects keyed by property name; List<T> and T[] become arrays;
+     * String, Bool and the numeric primitives map to their JSON kinds; null is null. A value
+     * whose run-time class differs from the property's declared class (a subclass) is written
+     * with a "@type" entry naming its class, and read back through it.
+     *
+     *     var text = Json.serialize(order)
+     *     var back = Json.deserialize<Order>(text)
+     */
+    class Json {
+        import Am.Lang
+        import Am.Collections
+        import Am.Util.Parsers.Text
+
+        /**
+         * Serializes a value to JSON text.
+         * @param value A reflected object, a List/array of such, a String, a primitive or null
+         * @return The JSON text
+         */
+        static fun serialize(value: Any): String {
+            return Json.toJsonValue(value, null).toJsonString()
+        }
+
+        /**
+         * Parses JSON text into an instance of T, which must be a `#reflect` class.
+         * @param text The JSON text
+         * @return The instance
+         */
+        static fun deserialize<T>(text: String): T {
+            var cr = ClassRef.getClassRefFromClass<T>()
+            if (cr == null) {
+                throw new Exception("Json.deserialize: " + nameof(T) + " is not #reflect")
+            }
+            return Json.fromJsonValue(Json.parse(text), cr) as T
+        }
+
+        /**
+         * Parses JSON text into an instance of the given reflected class.
+         * @param text The JSON text
+         * @param type The class to build
+         * @return The instance, as Any
+         */
+        static fun deserializeAs(text: String, type: ClassRef): Any {
+            return Json.fromJsonValue(Json.parse(text), type)
+        }
+
+        private static fun noArgs(): Any[] {
+            return new Any[0UI]
+        }
+
+        /**
+         * Parses JSON text into the generic JsonValue tree.
+         * @param text The JSON text
+         * @return The parsed value
+         */
+        static fun parse(text: String): JsonValue {
+            return new JsonParser(new TextParser(text)).parse()
+        }
+
+        /**
+         * Converts a value to a JsonValue tree.
+         * @param value The value
+         * @param declared The declared type of the slot it came from, or null; a run-time class
+         *        that differs gets a "@type" entry
+         * @return The JsonValue
+         */
+        static fun toJsonValue(value: Any, declared: ClassRef?): JsonValue {
+            if (value == null) {
+                return JsonValue.fromNull()
+            }
+            var cr = value.getClassRef()
+            var cn = cr.getClassName()
+            if (cn == "Am.Lang.String") { return JsonValue.fromString(value as String) }
+            if (cn == "Am.Lang.Int") { return JsonValue.fromInteger(value as Int) }
+            if (cn == "Am.Lang.Long") { return JsonValue.fromLong(value as Long) }
+            if (cn == "Am.Lang.Bool") { return JsonValue.fromBool(value as Bool) }
+            if (cn == "Am.Lang.Double") { return JsonValue.fromDouble(value as Double) }
+            if (cn == "Am.Lang.Float") { return JsonValue.fromFloat(value as Float) }
+            if (cn == "Am.Lang.UInt") { return JsonValue.fromUInteger(value as UInt) }
+            if (cn == "Am.Lang.ULong") { return JsonValue.fromULong(value as ULong) }
+            if (cn == "Am.Lang.Short") { return JsonValue.fromShort(value as Short) }
+            if (cn == "Am.Lang.UShort") { return JsonValue.fromUShort(value as UShort) }
+            if (cn == "Am.Lang.Byte") { return JsonValue.fromByte(value as Byte) }
+            if (cn == "Am.Lang.UByte") { return JsonValue.fromUByte(value as UByte) }
+            if (cn.startsWith("Am.Lang.Array_ta_")) {
+                var arr = new JsonArray()
+                var n = ClassRef.arrayLength(value as Object)
+                var i = 0
+                while (i < n) {
+                    arr.addValue(Json.toJsonValue(ClassRef.arrayGet(value as Object, i), null))
+                    i = i + 1
+                }
+                return JsonValue.fromArray(arr)
+            }
+            if (cn.startsWith("Am.Collections.List_ta_")) {
+                // Through the List's own methods, so nothing here depends on
+                // how it stores its elements.
+                var arr = new JsonArray()
+                var n = ClassRef.invoke(value as Object, "getSize", Json.noArgs()) as Int
+                var i = 0
+                while (i < n) {
+                    var idxArgs = new Any[1UI]
+                    idxArgs[0UI] = i
+                    arr.addValue(Json.toJsonValue(ClassRef.invoke(value as Object, "get", idxArgs), null))
+                    i = i + 1
+                }
+                return JsonValue.fromArray(arr)
+            }
+            if (cn.startsWith("Am.Collections.HashSet_ta_")) {
+                // A set is an array; its own toArray() decides the order.
+                var setItems = ClassRef.invoke(value as Object, "toArray", Json.noArgs()) as Object
+                var setArr = new JsonArray()
+                var sn = ClassRef.arrayLength(setItems)
+                var si = 0
+                while (si < sn) {
+                    setArr.addValue(Json.toJsonValue(ClassRef.arrayGet(setItems, si), null))
+                    si = si + 1
+                }
+                return JsonValue.fromArray(setArr)
+            }
+            if (cn.startsWith("Am.Collections.TreeSet_ta_")) {
+                // Sorted order, straight from the tree walk; the List it
+                // hands back is reflected with it.
+                return Json.toJsonValue(ClassRef.invoke(value as Object, "toList", Json.noArgs()), null)
+            }
+            if (cn.startsWith("Am.Collections.HashMap_ta_")) {
+                // A map with String keys is a JSON object; the values follow
+                // the map's declared value type.
+                var keyType = cr.getTypeArguments()[0UI]
+                if (keyType.getClassName() != "Am.Lang.String") {
+                    throw new Exception("Json: a map needs String keys, " + cn + " has " + keyType.getClassName())
+                }
+                var valueType = cr.getTypeArguments()[1UI]
+                var obj = new JsonObject()
+                var keys = ClassRef.invoke(value as Object, "buildKeys", Json.noArgs()) as Object
+                var kn = ClassRef.invoke(keys, "getSize", Json.noArgs()) as Int
+                var ki = 0
+                while (ki < kn) {
+                    var kIdx = new Any[1UI]
+                    kIdx[0UI] = ki
+                    var key = ClassRef.invoke(keys, "get", kIdx) as String
+                    var getArgs = new Any[1UI]
+                    getArgs[0UI] = key
+                    obj.putValue(key, Json.toJsonValue(ClassRef.invoke(value as Object, "get", getArgs), valueType))
+                    ki = ki + 1
+                }
+                return JsonValue.fromObject(obj)
+            }
+            if (!cr.isReflected()) {
+                throw new Exception("Json: " + cn + " is not #reflect")
+            }
+            var obj = new JsonObject()
+            if (declared != null && declared.getClassName() != cn) {
+                obj.putString("@type", cn)
+            }
+            var props = cr.getProperties()
+            var pi = 0UI
+            while (pi < props.length()) {
+                var p = props[pi]
+                obj.putValue(p.getName(), Json.toJsonValue(p.getValue(value as Object), p.getPropertyClassRef()))
+                pi++
+            }
+            return JsonValue.fromObject(obj)
+        }
+
+        /**
+         * Builds a value of the given type from a JsonValue tree.
+         * @param v The JSON value
+         * @param type The type to build: a reflected class, a List/array variant, String or a
+         *        primitive
+         * @return The value, as Any
+         */
+        static fun fromJsonValue(v: JsonValue, type: ClassRef): Any {
+            if (v.isNull()) {
+                return null
+            }
+            var cn = type.getClassName()
+            if (cn == "Am.Lang.String") { return v.asString() }
+            if (cn == "Am.Lang.Int") { return v.asInteger() }
+            if (cn == "Am.Lang.Long") { return v.asLong() }
+            if (cn == "Am.Lang.Bool") { return v.asBool() }
+            if (cn == "Am.Lang.Double") { return v.asDouble() }
+            if (cn == "Am.Lang.Float") { return v.asFloat() }
+            if (cn == "Am.Lang.UInt") { return v.asUInteger() }
+            if (cn == "Am.Lang.ULong") { return v.asULong() }
+            if (cn == "Am.Lang.Short") { return v.asShort() }
+            if (cn == "Am.Lang.UShort") { return v.asUShort() }
+            if (cn == "Am.Lang.Byte") { return v.asByte() }
+            if (cn == "Am.Lang.UByte") { return v.asUByte() }
+            if (cn.startsWith("Am.Lang.Array_ta_")) {
+                var elemType = type.getTypeArguments()[0UI]
+                var src = v.asArray()
+                var arr = ClassRef.newArray(type, src.size())
+                var i = 0
+                while (i < src.size()) {
+                    ClassRef.arraySet(arr, i, Json.fromJsonValue(src.getValue(i), elemType))
+                    i = i + 1
+                }
+                return arr
+            }
+            if (cn.startsWith("Am.Collections.List_ta_")) {
+                var elemType = type.getTypeArguments()[0UI]
+                var src = v.asArray()
+                var list = type.newInstance()
+                var i = 0
+                while (i < src.size()) {
+                    var addArgs = new Any[1UI]
+                    addArgs[0UI] = Json.fromJsonValue(src.getValue(i), elemType)
+                    ClassRef.invoke(list, "add", addArgs)
+                    i = i + 1
+                }
+                return list
+            }
+            if (cn.startsWith("Am.Collections.HashSet_ta_")) {
+                var setElemType = type.getTypeArguments()[0UI]
+                var setSrc = v.asArray()
+                var set = type.newInstance()
+                var si = 0
+                while (si < setSrc.size()) {
+                    var setAddArgs = new Any[1UI]
+                    setAddArgs[0UI] = Json.fromJsonValue(setSrc.getValue(si), setElemType)
+                    ClassRef.invoke(set, "add", setAddArgs)
+                    si = si + 1
+                }
+                return set
+            }
+            if (cn.startsWith("Am.Collections.TreeSet_ta_")) {
+                // A TreeSet is its comparator, and reflection cannot supply
+                // one: it is built by the constructor, which newInstance()
+                // does not run.
+                throw new Exception("Json: " + cn + " cannot be rebuilt - a TreeSet needs the comparator its constructor takes. Read into a List or HashSet instead.")
+            }
+            if (cn.startsWith("Am.Collections.HashMap_ta_")) {
+                var keyType = type.getTypeArguments()[0UI]
+                if (keyType.getClassName() != "Am.Lang.String") {
+                    throw new Exception("Json: a map needs String keys, " + cn + " has " + keyType.getClassName())
+                }
+                var mapValueType = type.getTypeArguments()[1UI]
+                var jsonObj = v.asObject()
+                var map = type.newInstance()
+                var mapKeys = jsonObj.keys()
+                var mi = 0
+                while (mi < mapKeys.getSize()) {
+                    var mk = mapKeys.get(mi)
+                    var setArgs = new Any[2UI]
+                    setArgs[0UI] = mk
+                    setArgs[1UI] = Json.fromJsonValue(jsonObj.getValue(mk), mapValueType)
+                    ClassRef.invoke(map, "set", setArgs)
+                    mi = mi + 1
+                }
+                return map
+            }
+            if (!type.isReflected()) {
+                throw new Exception("Json: " + cn + " is not #reflect")
+            }
+            var jo = v.asObject()
+            var actual = type
+            if (jo.has("@type")) {
+                var named = ClassRef.getClassRef(jo.getString("@type"))
+                if (named != null) {
+                    actual = named
+                }
+            }
+            var obj = actual.newInstance()
+            var props = actual.getProperties()
+            var pi = 0UI
+            while (pi < props.length()) {
+                var p = props[pi]
+                if (jo.has(p.getName())) {
+                    p.setValue(obj, Json.fromJsonValue(jo.getValue(p.getName()), p.getPropertyClassRef()))
+                }
+                pi++
+            }
+            return obj
+        }
+    }
+}

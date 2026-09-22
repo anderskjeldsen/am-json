@@ -22,6 +22,9 @@ platforms:
   - id: "linux-x64"
     extends: "libc"
     gccCommand: "gcc"
+  - id: "macos-arm"
+    extends: "libc"
+    gccCommand: "gcc"
   - id: linux-ppc32
     extends: libc
     gccCommand: powerpc-linux-gnu-gcc -O1
@@ -53,6 +56,8 @@ platforms:
     additionalLinkerFlags:
       - -pthread
 buildTargets:
+  - id: "macos-arm"
+    platform: "macos-arm"
   - id: aros-arm64-docker
     platform: aros-arm64
     dockerBuild:
