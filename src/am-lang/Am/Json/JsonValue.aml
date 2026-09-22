@@ -11,6 +11,7 @@ namespace Am.Json {
 
     class JsonValue(private var value: Any, private var type: JsonValueType) {
         import Am.Lang
+        import Am.Collections
 
         public fun getValue(): Any {
             return this.value
@@ -319,89 +320,89 @@ namespace Am.Json {
             if (s == null || s.length() == 0) {
                 return ""
             }
-            var sb = new StringBuilder()
+            // Byte-wise over the UTF-8 encoding: characterAt() answers UTF-16
+            // code units, which is not what the byte rules below are about.
+            var bytes = s.toBytes("UTF-8")
+            var out = new List<UByte>()
             var i = 0UI
-            var len = s.length().toUInt()
+            var len = bytes.length()
             while (i < len) {
-                var c = s.characterAt(i)
-                if (c == 34US) {
-                    sb.add("\\\"")
-                } else if (c == 92US) {
-                    sb.add("\\\\")
-                } else if (c == 8US) {
-                    sb.add("\\b")
-                } else if (c == 9US) {
-                    sb.add("\\t")
-                } else if (c == 10US) {
-                    sb.add("\\n")
-                } else if (c == 12US) {
-                    sb.add("\\f")
-                } else if (c == 13US) {
-                    sb.add("\\r")
-                } else if (c < 32US) {
-                    // Remaining control bytes (NUL, ASCII control
-                    // chars without dedicated escape sequences) →
-                    // \u00XX hex form so the parser doesn't have
-                    // to deal with them as raw bytes.
-                    sb.add("\\u00")
-                    JsonValue.appendHexNibble(sb, (c.toInt() / 16) % 16)
-                    JsonValue.appendHexNibble(sb, c.toInt() % 16)
-                } else if (c >= 128US) {
-                    // Part of a well-formed UTF-8 sequence: copy the
-                    // whole sequence through untouched. Checked as a
-                    // sequence rather than a byte at a time because a
-                    // continuation byte is only meaningful after its
-                    // lead byte.
-                    var seqLen = JsonValue.utf8SequenceLength(s, i, len)
+                var c = bytes[i]
+                if (c == 34UB) {
+                    out.add(92UB)
+                    out.add(34UB)
+                } else if (c == 92UB) {
+                    out.add(92UB)
+                    out.add(92UB)
+                } else if (c == 8UB) {
+                    out.add(92UB)
+                    out.add(98UB)
+                } else if (c == 9UB) {
+                    out.add(92UB)
+                    out.add(116UB)
+                } else if (c == 10UB) {
+                    out.add(92UB)
+                    out.add(110UB)
+                } else if (c == 12UB) {
+                    out.add(92UB)
+                    out.add(102UB)
+                } else if (c == 13UB) {
+                    out.add(92UB)
+                    out.add(114UB)
+                } else if (c < 32UB) {
+                    JsonValue.appendUnicodeEscape(out, c.toInt())
+                } else if (c >= 128UB) {
+                    var seqLen = JsonValue.utf8SequenceLength(bytes, i, len)
                     if (seqLen > 0UI) {
                         var k = 0UI
                         while (k < seqLen) {
-                            sb.addChar(s.characterAt(i + k))
+                            out.add(bytes[i + k])
                             k++
                         }
-                        // -1 because the loop's own i++ adds the last one.
                         i = i + seqLen - 1UI
                     } else {
-                        // Not valid UTF-8 -- a lone high byte, almost
-                        // always Latin-1 from an Amiga text file. Emit it
-                        // as \u00XX: the codepoint matches Latin-1, and
-                        // the document stays parseable by a strict reader.
-                        var v = c.toInt() % 256
-                        sb.add("\\u00")
-                        JsonValue.appendHexNibble(sb, (v / 16) % 16)
-                        JsonValue.appendHexNibble(sb, v % 16)
+                        // A lone high byte: Latin-1 text - its code point IS
+                        // the byte value.
+                        JsonValue.appendUnicodeEscape(out, c.toInt())
                     }
                 } else {
-                    sb.addChar(c)
+                    out.add(c)
                 }
                 i++
             }
-            return sb.toString()
+            return String.fromBytes(out.toArray(), "UTF-8")
         }
 
-        // Length of the well-formed UTF-8 sequence starting at `at`, or 0
-        // when the bytes there are not one. Rejects the malformed shapes a
-        // strict decoder rejects -- overlong encodings, surrogates encoded
-        // as three bytes, codepoints past U+10FFFF, truncated sequences,
-        // and missing continuation bytes -- because passing any of those
-        // through raw produces a document a strict JSON reader refuses,
-        // which is the failure this whole branch exists to avoid.
-        static fun utf8SequenceLength(s: String, at: UInt, len: UInt): UInt {
-            var b0 = s.characterAt(at).toInt()
+        // \u00XX for a value below 256.
+        private static fun appendUnicodeEscape(out: List<UByte>, v: Int) {
+            out.add(92UB)
+            out.add(117UB)
+            out.add(48UB)
+            out.add(48UB)
+            JsonValue.appendHexNibbleByte(out, (v / 16) % 16)
+            JsonValue.appendHexNibbleByte(out, v % 16)
+        }
+
+        private static fun appendHexNibbleByte(out: List<UByte>, v: Int) {
+            if (v < 10) {
+                out.add((48 + v).toUByte())
+            } else {
+                out.add((87 + v).toUByte())
+            }
+        }
+
+        // Length of the valid UTF-8 sequence starting at `at`, or 0 when the
+        // bytes there are not one (a lone Latin-1 byte, say).
+        static fun utf8SequenceLength(bytes: UByte[], at: UInt, len: UInt): UInt {
+            var b0 = bytes[at].toInt()
             var need = 0
-            var cp = 0
             if (b0 >= 0xC2 && b0 <= 0xDF) {
                 need = 1
-                cp = b0 - 0xC0
             } else if (b0 >= 0xE0 && b0 <= 0xEF) {
                 need = 2
-                cp = b0 - 0xE0
             } else if (b0 >= 0xF0 && b0 <= 0xF4) {
                 need = 3
-                cp = b0 - 0xF0
             } else {
-                // 0x80..0xC1 -- a continuation byte with no lead, or an
-                // overlong two-byte form. 0xF5..0xFF -- past U+10FFFF.
                 return 0UI
             }
             if (at + need.toUInt() >= len) {
@@ -409,26 +410,11 @@ namespace Am.Json {
             }
             var k = 1
             while (k <= need) {
-                var bn = s.characterAt(at + k.toUInt()).toInt()
+                var bn = bytes[at + k.toUInt()].toInt()
                 if (bn < 0x80 || bn > 0xBF) {
                     return 0UI
                 }
-                cp = (cp * 64) + (bn - 0x80)
                 k = k + 1
-            }
-            // Overlong forms and the surrogate range are ill-formed even
-            // though their bytes look structurally fine.
-            if (need == 2 && cp < 0x800) {
-                return 0UI
-            }
-            if (need == 3 && cp < 0x10000) {
-                return 0UI
-            }
-            if (cp >= 0xD800 && cp <= 0xDFFF) {
-                return 0UI
-            }
-            if (cp > 0x10FFFF) {
-                return 0UI
             }
             return (need + 1).toUInt()
         }

@@ -130,7 +130,9 @@ namespace Am.Json {
                             // Lone low surrogate.
                             cp = 0xFFFD
                         }
-                        JsonParser.appendUtf8(sb, cp)
+                        // One code point; the builder encodes it (an earlier byte-wise
+                        // append double-encoded it once StringBuilder.addChar took UTF-16 units).
+                        sb.addCodePoint(cp)
                         // We already consumed the escape body via
                         // readHex4; skip the `continue` fall-through.
                         continue
@@ -279,34 +281,5 @@ namespace Am.Json {
             return v
         }
 
-        // Emit UTF-8 for a Unicode codepoint (0..0x10FFFF) as one to
-        // four bytes into the StringBuilder. StringBuilder.addChar
-        // stores the low 8 bits verbatim (see its TODO note), so we can
-        // stream the bytes through it without triggering the
-        // truncation-above-0xFF behaviour — we've already broken the
-        // codepoint into ≤0xFF bytes ourselves.
-        //
-        // Byte-count / prefix table:
-        //   1 byte  0xxxxxxx                          U+0000..U+007F
-        //   2 bytes 110xxxxx 10xxxxxx                 U+0080..U+07FF
-        //   3 bytes 1110xxxx 10xxxxxx 10xxxxxx        U+0800..U+FFFF
-        //   4 bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx  U+10000..U+10FFFF
-        private static fun appendUtf8(sb: StringBuilder, cp: Int) {
-            if (cp < 0x80) {
-                sb.addChar(cp as UShort)
-            } else if (cp < 0x800) {
-                sb.addChar((0xC0 | ((cp >> 6) & 0x1F)) as UShort)
-                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
-            } else if (cp < 0x10000) {
-                sb.addChar((0xE0 | ((cp >> 12) & 0x0F)) as UShort)
-                sb.addChar((0x80 | ((cp >> 6) & 0x3F)) as UShort)
-                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
-            } else {
-                sb.addChar((0xF0 | ((cp >> 18) & 0x07)) as UShort)
-                sb.addChar((0x80 | ((cp >> 12) & 0x3F)) as UShort)
-                sb.addChar((0x80 | ((cp >> 6) & 0x3F)) as UShort)
-                sb.addChar((0x80 | (cp & 0x3F)) as UShort)
-            }
-        }
     }
 }
