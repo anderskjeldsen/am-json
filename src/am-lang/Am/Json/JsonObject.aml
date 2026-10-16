@@ -43,6 +43,14 @@ namespace Am.Json {
             this.properties.set(key, JsonValue.fromUShort(value))
         }
 
+        public fun putDouble(key: String, value: Double) {
+            this.properties.set(key, JsonValue.fromDouble(value))
+        }
+
+        public fun putFloat(key: String, value: Float) {
+            this.properties.set(key, JsonValue.fromFloat(value))
+        }
+
         public fun putNumber(key: String, value: String) {
             this.properties.set(key, JsonValue.fromNumber(value))
         }

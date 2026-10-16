@@ -46,11 +46,13 @@ namespace Am.Json {
             this.elements.add(JsonValue.fromNumber(value))
         }
 
-        /*
-        public fun addDouble(value: Double): Void {
+        public fun addDouble(value: Double) {
             this.elements.add(JsonValue.fromDouble(value))
         }
-            */
+
+        public fun addFloat(value: Float) {
+            this.elements.add(JsonValue.fromFloat(value))
+        }
 
         public fun addBool(value: Bool) {
             this.elements.add(JsonValue.fromBool(value))
