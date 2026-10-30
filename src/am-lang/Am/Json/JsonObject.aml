@@ -6,73 +6,84 @@ namespace Am.Json {
 
         private var properties: HashMap<String, JsonValue> = new HashMap<String, JsonValue>()
 
+        // The keys in the order they were put, because a HashMap's own order
+        // is its hash order: `{"name":...,"version":...}` parsed and printed
+        // again came back with the keys shuffled, which makes a serialized
+        // document impossible to compare with the one it came from, and an
+        // HTTP API's response body different every time its keys change.
+        // JSON says an object is unordered; nothing says a library has to
+        // make it look that way.
+        private var order: List<String> = new List<String>()
+
         // Put methods for different types
         public fun putString(key: String, value: String) {
-            this.properties.set(key, JsonValue.fromString(value))
+            this.putValue(key, JsonValue.fromString(value))
         }
 
         public fun putInt(key: String, value: Int) {
-            this.properties.set(key, JsonValue.fromInteger(value))
+            this.putValue(key, JsonValue.fromInteger(value))
         }
 
         public fun putLong(key: String, value: Long) {
-            this.properties.set(key, JsonValue.fromLong(value))
+            this.putValue(key, JsonValue.fromLong(value))
         }
 
         public fun putByte(key: String, value: Byte) {
-            this.properties.set(key, JsonValue.fromByte(value))
+            this.putValue(key, JsonValue.fromByte(value))
         }
 
         public fun putShort(key: String, value: Short) {
-            this.properties.set(key, JsonValue.fromShort(value))
+            this.putValue(key, JsonValue.fromShort(value))
         }
 
         public fun putUInt(key: String, value: UInt) {
-            this.properties.set(key, JsonValue.fromUInteger(value))
+            this.putValue(key, JsonValue.fromUInteger(value))
         }
 
         public fun putULong(key: String, value: ULong) {
-            this.properties.set(key, JsonValue.fromULong(value))
+            this.putValue(key, JsonValue.fromULong(value))
         }
 
         public fun putUByte(key: String, value: UByte) {
-            this.properties.set(key, JsonValue.fromUByte(value))
+            this.putValue(key, JsonValue.fromUByte(value))
         }
 
         public fun putUShort(key: String, value: UShort) {
-            this.properties.set(key, JsonValue.fromUShort(value))
+            this.putValue(key, JsonValue.fromUShort(value))
         }
 
         public fun putDouble(key: String, value: Double) {
-            this.properties.set(key, JsonValue.fromDouble(value))
+            this.putValue(key, JsonValue.fromDouble(value))
         }
 
         public fun putFloat(key: String, value: Float) {
-            this.properties.set(key, JsonValue.fromFloat(value))
+            this.putValue(key, JsonValue.fromFloat(value))
         }
 
         public fun putNumber(key: String, value: String) {
-            this.properties.set(key, JsonValue.fromNumber(value))
+            this.putValue(key, JsonValue.fromNumber(value))
         }
 
         public fun putBool(key: String, value: Bool) {
-            this.properties.set(key, JsonValue.fromBool(value))
+            this.putValue(key, JsonValue.fromBool(value))
         }
 
         public fun putObject(key: String, value: JsonObject) {
-            this.properties.set(key, JsonValue.fromObject(value))
+            this.putValue(key, JsonValue.fromObject(value))
         }
 
         public fun putArray(key: String, value: JsonArray) {
-            this.properties.set(key, JsonValue.fromArray(value))
+            this.putValue(key, JsonValue.fromArray(value))
         }
 
         public fun putNull(key: String) {
-            this.properties.set(key, JsonValue.fromNull())
+            this.putValue(key, JsonValue.fromNull())
         }
 
-        // Generic put method for JsonValue
+        // Generic put method for JsonValue. Every typed putter above goes
+        // through here, so recording the order in one place covers them all.
         public fun putValue(key: String, value: JsonValue) {
+            if (!this.properties.containsKey(key)) { this.order.add(key) }
             this.properties.set(key, value)
         }
 
@@ -249,11 +260,28 @@ namespace Am.Json {
         }
 
         public fun remove(key: String): Bool {
-            return this.properties.remove(key)
+            var removed = this.properties.remove(key)
+            if (removed) {
+                var kept = new List<String>()
+                var i = 0
+                while (i < this.order.getSize()) {
+                    if (!this.order.get(i).equals(key)) { kept.add(this.order.get(i)) }
+                    i = i + 1
+                }
+                this.order = kept
+            }
+            return removed
         }
 
+        /** The keys in insertion order — a copy, so a caller cannot reorder it. */
         public fun keys(): List<String> {
-            return this.properties.buildKeys()
+            var out = new List<String>()
+            var i = 0
+            while (i < this.order.getSize()) {
+                out.add(this.order.get(i))
+                i = i + 1
+            }
+            return out
         }
 
         public fun size(): Int {
