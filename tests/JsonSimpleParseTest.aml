@@ -17,7 +17,7 @@ namespace Am.Json.Tests {
             
             // Debug each character
             "String character by character:".println()
-            for(i = 0 to jsonStr.getLength()) {
+            for(i = 0 until jsonStr.getLength()) {
                 var char = jsonStr.characterAt(i.toUInt())
                 ("Index " + i.toString() + ": character code " + char.toString()).println()
             }

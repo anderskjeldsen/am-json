@@ -53,7 +53,7 @@ var textParser = new TextParser(jsonArray)
 var parser = new JsonParser(textParser)
 var array = parser.parse().asArray()
 
-for (i = 0 to array.size()) {
+for (i = 0 until array.size()) {
     var item = array.getString(i)
     item.println()
 }
